@@ -6,602 +6,1291 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fitness">
-<title>Fitness Tracker</title>
+<title>Fitness Tracker v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  :root{
-    --bg:#0F1117;--card:#1A1F2E;--border:#2A2F3E;
-    --green:#4FFFB0;--orange:#FF6B35;--text:#E8EAF0;--muted:#6B7280;
-    --deep:#0D1520;
-  }
-  body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:80px;}
-  a{color:var(--green);text-decoration:none;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0F1117;--card:#1A1F2E;--card2:#141820;--border:#2A2F3E;
+  --green:#4FFFB0;--orange:#FF6B35;--blue:#60A5FA;--purple:#A78BFA;--red:#F87171;
+  --text:#E8EAF0;--muted:#6B7280;--deep:#0A0D13;
+}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:90px;}
 
-  /* HEADER */
-  .header{padding:52px 20px 16px;border-bottom:1px solid var(--border);}
-  .header-eyebrow{font-size:10px;color:var(--green);letter-spacing:2px;font-weight:700;}
-  .header-title{font-size:24px;font-weight:800;margin-top:4px;}
-  .header-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.header{padding:52px 20px 12px;border-bottom:1px solid var(--border);}
+.header-eyebrow{font-size:10px;color:var(--green);letter-spacing:2px;font-weight:700;}
+.header-title{font-size:22px;font-weight:800;margin-top:2px;}
+.header-meta{display:flex;gap:16px;margin-top:6px;}
+.header-stat{font-size:12px;color:var(--muted);}
+.header-stat span{color:var(--text);font-weight:600;}
 
-  /* TABS */
-  .tab-bar{display:flex;gap:4px;padding:8px 12px;background:var(--bg);position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
-  .tab-btn{flex:1;padding:9px 4px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:var(--muted);transition:all .15s;}
-  .tab-btn.active{background:var(--green);color:#0F1117;font-weight:700;}
+.nav{display:flex;padding:8px 8px;background:var(--bg);position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);gap:2px;}
+.nav-btn{flex:1;padding:8px 2px;border:none;border-radius:8px;cursor:pointer;font-size:10px;background:transparent;color:var(--muted);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.nav-btn.active{background:var(--green);color:#0F1117;font-weight:700;}
+.nav-icon{font-size:18px;}
 
-  /* CONTENT */
-  .content{padding:16px;}
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
+.content{padding:16px;}
+.tab{display:none;}
+.tab.active{display:block;}
 
-  /* CARDS */
-  .card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
-  .card.green-left{border-left:3px solid var(--green);}
-  .card.orange-left{border-left:3px solid var(--orange);}
-  .label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
+.card.accent-green{border-left:3px solid var(--green);}
+.card.accent-orange{border-left:3px solid var(--orange);}
+.card.accent-blue{border-left:3px solid var(--blue);}
+.card.accent-purple{border-left:3px solid var(--purple);}
+.label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;}
 
-  /* DAY BUTTONS */
-  .day-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-  .day-btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:12px;text-align:center;min-width:64px;transition:all .15s;}
-  .day-btn.active{background:var(--green);color:#0F1117;font-weight:700;border-color:var(--green);}
-  .day-btn.today{border-color:var(--green);}
-  .day-emoji{display:block;font-size:10px;}
+.day-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.day-btn{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:11px;text-align:center;min-width:56px;transition:all .15s;}
+.day-btn.active{background:var(--green);color:#0F1117;font-weight:700;border-color:var(--green);}
+.day-btn.today{border-color:var(--green);}
+.day-emoji{display:block;font-size:9px;margin-top:1px;}
 
-  /* PROGRESS */
-  .progress-row{display:flex;align-items:center;gap:16px;}
-  .ring-wrap{position:relative;width:80px;height:80px;flex-shrink:0;}
-  .ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:800;color:var(--green);}
-  .progress-bar{height:6px;background:#1A2B3C;border-radius:3px;margin-top:4px;overflow:hidden;}
-  .progress-fill{height:100%;border-radius:3px;transition:width .3s;}
-  .progress-fill.green{background:var(--green);}
-  .progress-fill.orange{background:var(--orange);}
+.ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
+.ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;font-weight:800;color:var(--green);}
 
-  /* INPUTS */
-  .input-row{display:flex;gap:16px;margin-top:12px;}
-  .input-group{flex:1;}
-  .input-group label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
-  input[type=number],input[type=text],textarea{width:100%;background:var(--deep);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:16px;outline:none;font-family:inherit;}
-  input[type=number]{font-family:monospace;font-weight:700;font-size:20px;}
-  textarea{resize:vertical;line-height:1.5;font-size:14px;}
+.prog-bar{height:5px;background:#1A2B3C;border-radius:3px;margin-top:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s;}
 
-  /* EXERCISE CARD */
-  .ex-card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border);border-left:3px solid var(--border);transition:all .2s;}
-  .ex-card.done{border-left-color:var(--green);opacity:.7;}
-  .ex-row{display:flex;align-items:flex-start;gap:12px;}
-  .checkbox{width:26px;height:26px;border-radius:6px;border:2px solid #4B5563;background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#0F1117;transition:all .15s;}
-  .checkbox.checked{background:var(--green);border-color:var(--green);}
-  .ex-name{font-weight:700;font-size:15px;}
-  .ex-name.done{text-decoration:line-through;color:var(--muted);}
-  .ex-sets{color:var(--orange);font-size:13px;font-weight:600;margin-top:3px;}
-  .ex-note{color:var(--muted);font-size:12px;margin-top:3px;}
-  .ex-link{font-size:11px;color:var(--green);margin-left:8px;}
+input[type=number],input[type=text],textarea,select{width:100%;background:var(--deep);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:15px;outline:none;font-family:inherit;-webkit-appearance:none;}
+input[type=number]{font-family:monospace;font-weight:700;}
+textarea{resize:vertical;line-height:1.5;font-size:13px;}
+select option{background:#1A1F2E;color:var(--text);}
 
-  /* GROCERY */
-  .grocery-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--deep);}
-  .grocery-item:last-child{border-bottom:none;}
-  .grocery-name{font-size:14px;}
-  .grocery-note{font-size:12px;color:var(--muted);}
+.ex-card{background:var(--card);border-radius:10px;padding:13px;margin-bottom:8px;border:1px solid var(--border);border-left:3px solid var(--border);transition:all .2s;}
+.ex-card.done{border-left-color:var(--green);opacity:.7;}
+.ex-row{display:flex;align-items:flex-start;gap:10px;}
+.checkbox{width:24px;height:24px;border-radius:6px;border:2px solid #4B5563;background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0F1117;transition:all .15s;}
+.checkbox.checked{background:var(--green);border-color:var(--green);}
+.ex-name{font-weight:700;font-size:14px;}
+.ex-name.done{text-decoration:line-through;color:var(--muted);}
+.ex-sets{color:var(--orange);font-size:12px;font-weight:600;margin-top:2px;}
+.ex-note{color:var(--muted);font-size:11px;margin-top:2px;}
+.ex-link{font-size:11px;color:var(--green);margin-left:6px;}
+.ex-en{font-size:11px;color:var(--muted);font-style:italic;margin-left:4px;}
 
-  /* FOOD */
-  .date-scroll{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;scrollbar-width:none;}
-  .date-scroll::-webkit-scrollbar{display:none;}
-  .date-btn{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:12px;white-space:nowrap;position:relative;flex-shrink:0;}
-  .date-btn.active{background:var(--green);color:#0F1117;font-weight:700;border-color:var(--green);}
-  .date-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--green);}
-  .meal-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block;}
+.supp-card{background:var(--card);border-radius:10px;padding:13px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.supp-check{width:28px;height:28px;border-radius:8px;border:2px solid #4B5563;background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:#0F1117;transition:all .15s;}
+.supp-check.checked{background:var(--green);border-color:var(--green);}
+.supp-name{font-weight:700;font-size:14px;}
+.supp-dose{color:var(--muted);font-size:12px;margin-top:1px;}
+.supp-time{font-size:11px;padding:2px 8px;border-radius:10px;background:#1A2B3C;color:var(--blue);margin-left:auto;flex-shrink:0;}
 
-  /* EXPORT BTN */
-  .export-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;background:#1A2B3C;border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;}
-  .export-btn:active{opacity:.8;}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;}
+.btn-green{background:var(--green);color:#0F1117;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-outline-green{background:transparent;border:1px solid var(--green);color:var(--green);}
+.btn-red{background:transparent;border:1px solid var(--red);color:var(--red);}
+.btn:active{opacity:.8;transform:scale(.98);}
 
-  /* TOAST */
-  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--green);color:#0F1117;padding:10px 20px;border-radius:20px;font-weight:700;font-size:14px;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;}
-  .toast.show{opacity:1;}
+.metric-row{display:flex;gap:10px;margin-bottom:12px;}
+.metric-card{flex:1;background:var(--card2);border-radius:10px;padding:12px;border:1px solid var(--border);}
+.metric-val{font-size:22px;font-weight:800;margin-top:4px;}
+.metric-goal{font-size:11px;color:var(--muted);margin-top:2px;}
 
-  /* CARDIO ONLY */
-  .cardio-note{color:var(--text);margin-top:8px;line-height:1.6;font-size:14px;}
+.milestone{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.milestone:last-child{border-bottom:none;}
+.ms-bar-wrap{flex:1;height:6px;background:#1A2B3C;border-radius:3px;overflow:hidden;}
+.ms-bar{height:100%;border-radius:3px;transition:width .5s;}
+.ms-label{font-size:13px;font-weight:600;}
+.ms-val{font-size:11px;color:var(--muted);margin-top:1px;}
 
-  /* GROCERY COLORS */
-  .cat-protein{border-left:3px solid var(--orange);}
-  .cat-carbs{border-left:3px solid var(--green);}
-  .cat-veg{border-left:3px solid #7C3AED;}
-  .cat-fat{border-left:3px solid #F59E0B;}
-  .cat-label-protein{color:var(--orange);}
-  .cat-label-carbs{color:var(--green);}
-  .cat-label-veg{color:#A78BFA;}
-  .cat-label-fat{color:#F59E0B;}
+.mood-row{display:flex;gap:8px;margin-top:8px;}
+.mood-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:18px;text-align:center;transition:all .15s;}
+.mood-btn.active{border-color:var(--green);background:#0D2818;}
 
-  svg text{font-family:system-ui,-apple-system,sans-serif;}
+.meal-card{background:var(--card);border-radius:10px;padding:13px;margin-bottom:8px;border:1px solid var(--border);}
+.meal-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block;}
+.meal-item{display:flex;gap:8px;margin-bottom:6px;align-items:center;}
+.meal-item input[type=text]{flex:1;}
+.meal-item input[type=number]{width:70px;flex:none;}
+.meal-item select{width:54px;flex:none;font-size:12px;padding:10px 4px;}
+.meal-item input.kcal{width:54px;flex:none;font-size:12px;padding:10px 4px;}
+.meal-add{font-size:12px;color:var(--green);cursor:pointer;padding:4px 0;display:inline-block;}
+.meal-del{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--red);cursor:pointer;flex-shrink:0;font-size:14px;display:flex;align-items:center;justify-content:center;}
+
+.date-scroll{display:flex;gap:5px;overflow-x:auto;margin-bottom:14px;padding-bottom:3px;scrollbar-width:none;}
+.date-scroll::-webkit-scrollbar{display:none;}
+.date-btn{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:11px;white-space:nowrap;position:relative;flex-shrink:0;}
+.date-btn.active{background:var(--green);color:#0F1117;font-weight:700;border-color:var(--green);}
+.date-dot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--green);}
+
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--green);color:#0F1117;padding:10px 20px;border-radius:20px;font-weight:700;font-size:13px;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;padding:20px;overflow-y:auto;}
+.modal-backdrop.open{display:flex;align-items:flex-start;justify-content:center;padding-top:60px;}
+.modal{background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:420px;border:1px solid var(--border);}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal-footer{display:flex;gap:8px;margin-top:16px;}
+.modal-footer .btn{flex:1;}
+.form-group{margin-bottom:12px;}
+.form-group label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+
+.sport-card{background:var(--card);border-radius:10px;padding:13px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sport-icon{font-size:22px;width:36px;text-align:center;}
+.sport-name{font-weight:700;font-size:14px;}
+.sport-meta{font-size:12px;color:var(--muted);margin-top:1px;}
+
+.section-title{font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:1px;}
+
+.extra-ex-card{background:var(--card2);border-radius:10px;padding:12px;margin-bottom:6px;border:1px solid var(--border);}
+
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;margin-right:4px;}
+.tag-green{background:#0D2818;color:var(--green);}
+.tag-blue{background:#0D1F3C;color:var(--blue);}
+.tag-orange{background:#2A1A0A;color:var(--orange);}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-eyebrow">FITNESS TRACKER</div>
+  <div class="header-eyebrow">FITNESS TRACKER V2</div>
   <div class="header-title">Tvůj plán 💪</div>
-  <div class="header-sub">Fáze 1 — Červen / Červenec 2026</div>
+  <div class="header-meta">
+    <div class="header-stat">Fáze <span id="hdr-phase">1</span></div>
+    <div class="header-stat">Váha <span id="hdr-weight">—</span> kg</div>
+    <div class="header-stat">Pas <span id="hdr-waist">—</span> cm</div>
+  </div>
 </div>
 
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('workout')">💪 Trénink</button>
-  <button class="tab-btn" onclick="switchTab('groceries')">🛒 Suroviny</button>
-  <button class="tab-btn" onclick="switchTab('food')">🍽️ Jídelník</button>
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('workout')"><span class="nav-icon">💪</span>Trénink</button>
+  <button class="nav-btn" onclick="switchTab('supps')"><span class="nav-icon">💊</span>Doplňky</button>
+  <button class="nav-btn" onclick="switchTab('body')"><span class="nav-icon">📊</span>Míry</button>
+  <button class="nav-btn" onclick="switchTab('food')"><span class="nav-icon">🍽️</span>Jídelník</button>
+  <button class="nav-btn" onclick="switchTab('settings')"><span class="nav-icon">⚙️</span>Nastavení</button>
 </div>
 
 <div class="content">
 
-<!-- ═══════════════════════════════════════════════ TRÉNINK -->
-<div id="tab-workout" class="tab-panel active">
-
+<!-- ═══ TRÉNINK ═══ -->
+<div id="tab-workout" class="tab active">
   <div class="card">
-    <div class="progress-row">
+    <div style="display:flex;align-items:center;gap:14px;">
       <div class="ring-wrap">
-        <svg width="80" height="80" id="ring-svg">
-          <circle cx="40" cy="40" r="32" fill="none" stroke="#1A2B3C" stroke-width="6"/>
-          <circle cx="40" cy="40" r="32" fill="none" stroke="#4FFFB0" stroke-width="6"
-            stroke-dasharray="201" stroke-dashoffset="201"
-            stroke-linecap="round" transform="rotate(-90 40 40)"
-            id="ring-circle" style="transition:stroke-dashoffset .5s ease"/>
-        </svg>
-        <div class="ring-label" id="ring-text">0/0</div>
+        <svg width="72" height="72"><circle cx="36" cy="36" r="28" fill="none" stroke="#1A2B3C" stroke-width="5"/><circle cx="36" cy="36" r="28" fill="none" stroke="#4FFFB0" stroke-width="5" stroke-dasharray="176" stroke-dashoffset="176" stroke-linecap="round" transform="rotate(-90 36 36)" id="ring-c" style="transition:stroke-dashoffset .5s"/></svg>
+        <div class="ring-label" id="ring-txt">0/0</div>
       </div>
-      <div>
-        <div class="label">DNEŠNÍ POKROK</div>
-        <div style="font-size:17px;font-weight:700;margin-top:4px;" id="day-type-label">—</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="today-date-label">—</div>
+      <div style="flex:1;">
+        <div class="label">Dnešní pokrok</div>
+        <div style="font-size:16px;font-weight:700;margin-top:3px;" id="day-type-lbl">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;" id="today-lbl">—</div>
       </div>
     </div>
   </div>
 
-  <div class="day-row" id="day-buttons"></div>
+  <div class="day-row" id="day-btns"></div>
 
-  <!-- Kroky + patra -->
   <div class="card">
-    <div class="label">DNEŠNÍ AKTIVITA</div>
-    <div class="input-row">
-      <div class="input-group">
-        <label>👟 Kroky</label>
-        <input type="number" id="input-steps" placeholder="0" oninput="saveCardio()">
-      </div>
-      <div class="input-group">
-        <label>🏢 Patra</label>
-        <input type="number" id="input-floors" placeholder="0" oninput="saveCardio()">
-      </div>
+    <div class="label">Aktivita dnes</div>
+    <div style="display:flex;gap:12px;margin-top:10px;">
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">👟 Kroky</label><input type="number" id="inp-steps" placeholder="0" oninput="saveCardio()"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">🏢 Patra</label><input type="number" id="inp-floors" placeholder="0" oninput="saveCardio()"></div>
     </div>
-    <div class="input-row" style="margin-top:12px;">
-      <div class="input-group">
-        <div style="font-size:11px;color:var(--muted);">Kroky — cíl 9 000</div>
-        <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill green" id="bar-steps" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="steps-label">0 / 9 000</div>
-      </div>
-      <div class="input-group">
-        <div style="font-size:11px;color:var(--muted);">Patra — cíl 15</div>
-        <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill orange" id="bar-floors" style="width:0%"></div></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="floors-label">0 / 15</div>
-      </div>
+    <div style="display:flex;gap:12px;margin-top:10px;">
+      <div style="flex:1;"><div style="font-size:10px;color:var(--muted);" id="steps-goal-lbl">Cíl kroků</div><div class="prog-bar"><div class="prog-fill" style="background:var(--green)" id="bar-steps"></div></div><div style="font-size:10px;color:var(--muted);margin-top:2px;" id="steps-lbl">0 / 9 000</div></div>
+      <div style="flex:1;"><div style="font-size:10px;color:var(--muted);">Cíl pater</div><div class="prog-bar"><div class="prog-fill" style="background:var(--orange)" id="bar-floors"></div></div><div style="font-size:10px;color:var(--muted);margin-top:2px;" id="floors-lbl">0 / 15</div></div>
     </div>
   </div>
 
-  <div id="exercises-container"></div>
+  <div id="exercises-cont"></div>
+
+  <div id="sports-today-cont"></div>
+
+  <button class="btn btn-outline-green" style="width:100%;margin-bottom:8px;" onclick="openAddExModal()">+ Přidat cvik navíc</button>
+  <button class="btn btn-outline" style="width:100%;" onclick="openAddSportModal()">+ Přidat sport / aktivitu</button>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SUROVINY -->
-<div id="tab-groceries" class="tab-panel">
-
+<!-- ═══ DOPLŇKY ═══ -->
+<div id="tab-supps" class="tab">
   <div class="card">
-    <div class="label">DOPORUČENÝ NÁKUPNÍ SEZNAM</div>
-    <p style="color:var(--muted);font-size:13px;margin-top:6px;">Co mít doma každý týden. Rotuj bílkoviny, zbytek doplňuj průběžně.</p>
-  </div>
-
-  <div class="card cat-protein">
-    <div class="label cat-label-protein">🥩 Bílkoviny</div>
-    <div style="margin-top:10px;">
-      <div class="grocery-item"><span class="grocery-name">Kuřecí stehna / prsa</span><span class="grocery-note">2–3× týdně</span></div>
-      <div class="grocery-item"><span class="grocery-name">Vepřová panenka / krkovice</span><span class="grocery-note">1–2× týdně</span></div>
-      <div class="grocery-item"><span class="grocery-name">Hovězí zadní / mleté hovězí</span><span class="grocery-note">1× týdně</span></div>
-      <div class="grocery-item"><span class="grocery-name">Tuňák ve vodě (konzerva)</span><span class="grocery-note">vždy doma</span></div>
-      <div class="grocery-item"><span class="grocery-name">Vejce</span><span class="grocery-note">min. 10 ks doma</span></div>
-      <div class="grocery-item"><span class="grocery-name">Tvaroh tučný 4%</span><span class="grocery-note">rychlá večeře</span></div>
-      <div class="grocery-item"><span class="grocery-name">Pstruh / jehněčí / kachna</span><span class="grocery-note">víkend, zpestření</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="label">Doplňky dnes</div><div style="font-size:12px;color:var(--muted);margin-top:2px;" id="supp-progress-lbl">0 z 0 vzato</div></div>
+      <button class="btn btn-outline-green" style="padding:7px 12px;font-size:12px;" onclick="openAddSuppModal()">+ Přidat</button>
     </div>
   </div>
-
-  <div class="card cat-carbs">
-    <div class="label cat-label-carbs">🌾 Přílohy</div>
-    <div style="margin-top:10px;">
-      <div class="grocery-item"><span class="grocery-name">Rýže basmati</span><span class="grocery-note">tréninkové dny</span></div>
-      <div class="grocery-item"><span class="grocery-name">Batát</span><span class="grocery-note">zdravější než brambory</span></div>
-      <div class="grocery-item"><span class="grocery-name">Brambory</span><span class="grocery-note">oběd / večeře</span></div>
-      <div class="grocery-item"><span class="grocery-name">Celozrnný chléb</span><span class="grocery-note">snídaně / lehká večeře</span></div>
-      <div class="grocery-item"><span class="grocery-name">Ovesné vločky</span><span class="grocery-note">snídaně v trén. den</span></div>
-      <div class="grocery-item"><span class="grocery-name">Čočka / cizrna</span><span class="grocery-note">1× týdně, levné + bílkoviny</span></div>
-    </div>
+  <div id="supps-morning">
+    <div class="section-title">🌅 Ráno</div>
+    <div id="supps-morning-list"></div>
+  </div>
+  <div id="supps-evening">
+    <div class="section-title">🌙 Večer</div>
+    <div id="supps-evening-list"></div>
   </div>
 
-  <div class="card cat-veg">
-    <div class="label cat-label-veg">🥦 Zelenina</div>
-    <div style="margin-top:10px;">
-      <div class="grocery-item"><span class="grocery-name">Brokolice (mražená OK)</span><span class="grocery-note">vždy doma</span></div>
-      <div class="grocery-item"><span class="grocery-name">Špenát (mražený OK)</span><span class="grocery-note">vždy doma</span></div>
-      <div class="grocery-item"><span class="grocery-name">Paprika, cuketa</span><span class="grocery-note">čerstvá</span></div>
-      <div class="grocery-item"><span class="grocery-name">Cibule, česnek</span><span class="grocery-note">základ všeho</span></div>
-      <div class="grocery-item"><span class="grocery-name">Rajčata / passata</span><span class="grocery-note">základ omáček</span></div>
-      <div class="grocery-item"><span class="grocery-name">Mražená zeleninová směs</span><span class="grocery-note">rychlá záchrana</span></div>
-    </div>
+  <div class="section-title">Historie — 7 dní</div>
+  <div class="card" style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;" id="supp-history-table"></table>
   </div>
-
-  <div class="card cat-fat">
-    <div class="label cat-label-fat">🫙 Dochucení & tuky</div>
-    <div style="margin-top:10px;">
-      <div class="grocery-item"><span class="grocery-name">Olivový olej</span><span class="grocery-note">hlavní tuk</span></div>
-      <div class="grocery-item"><span class="grocery-name">Máslo</span><span class="grocery-note">na dochu</span></div>
-      <div class="grocery-item"><span class="grocery-name">Sójová omáčka, worcester</span><span class="grocery-note">—</span></div>
-      <div class="grocery-item"><span class="grocery-name">Hořčice</span><span class="grocery-note">—</span></div>
-      <div class="grocery-item"><span class="grocery-name">Paprika, kmín, rozmarýn, tymián</span><span class="grocery-note">základ koření</span></div>
-    </div>
-  </div>
-
-  <div class="card green-left" style="background:#0D2818;">
-    <div class="label" style="color:var(--green);">💡 LOGIKA VEČEŘÍ</div>
-    <div style="margin-top:10px;font-size:13px;line-height:1.8;">
-      <div>🥩 <strong>Bílkovina</strong> — vždy základ</div>
-      <div>🌾 <strong>Příloha</strong> — v tréninkový den více, jinak méně</div>
-      <div>🥦 <strong>Zelenina</strong> — vždy přidat, mražená je OK</div>
-      <div style="margin-top:8px;color:var(--muted);">Obědy neřeš — česká klasika je OK.<br>Polévku nevynechávej, omáčku omeč na půl porce.</div>
-    </div>
-  </div>
-
 </div>
 
-<!-- ═══════════════════════════════════════════════ JÍDELNÍK -->
-<div id="tab-food" class="tab-panel">
-
-  <div class="date-scroll" id="date-nav"></div>
-
-  <div class="card" style="margin-bottom:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div class="label">JÍDELNÍK</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="food-date-label">—</div>
+<!-- ═══ MÍRY ═══ -->
+<div id="tab-body" class="tab">
+  <div class="card">
+    <div class="label">Zadat dnešní míry</div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">⚖️ Váha (kg)</label><input type="number" id="inp-weight" placeholder="85.0" step="0.1"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">📏 Pas (cm)</label><input type="number" id="inp-waist" placeholder="104" step="0.5"></div>
+    </div>
+    <div style="margin-top:10px;">
+      <label style="font-size:11px;color:var(--muted);">😴 Spánek (hodiny)</label>
+      <input type="number" id="inp-sleep" placeholder="7.5" step="0.5">
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">⚡ Energie / nálada</div>
+      <div class="mood-row" id="mood-row">
+        <button class="mood-btn" onclick="setMood(1)">😴</button>
+        <button class="mood-btn" onclick="setMood(2)">😐</button>
+        <button class="mood-btn" onclick="setMood(3)">🙂</button>
+        <button class="mood-btn" onclick="setMood(4)">😄</button>
+        <button class="mood-btn" onclick="setMood(5)">🔥</button>
       </div>
-      <button class="export-btn" style="width:auto;" onclick="copyDay()">📋 Kopírovat den</button>
+    </div>
+    <div style="margin-top:10px;">
+      <label style="font-size:11px;color:var(--muted);">📝 Poznámka ke dni</label>
+      <textarea id="inp-note" rows="2" placeholder="Jak se dnes cítíš, co tě trápí, co se dařilo..."></textarea>
+    </div>
+    <button class="btn btn-green" style="width:100%;margin-top:12px;" onclick="saveBodyMetrics()">Uložit míry</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric-card"><div class="label">Váha</div><div class="metric-val" id="cur-weight">—</div><div class="metric-goal" id="goal-weight">Cíl: 80 kg</div></div>
+    <div class="metric-card"><div class="label">Pas</div><div class="metric-val" id="cur-waist">—</div><div class="metric-goal" id="goal-waist">Cíl: 98 cm</div></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:12px;">Milníky</div>
+    <div class="milestone">
+      <div style="font-size:18px;">⚖️</div>
+      <div style="flex:1;">
+        <div class="ms-label" id="ms-weight-lbl">Váha — — kg</div>
+        <div class="ms-val" id="ms-weight-val">Start: 85 kg → Cíl: 80 kg</div>
+        <div class="ms-bar-wrap" style="margin-top:5px;"><div class="ms-bar" style="background:var(--green);" id="ms-weight-bar"></div></div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div style="font-size:18px;">📏</div>
+      <div style="flex:1;">
+        <div class="ms-label" id="ms-waist-lbl">Pas — — cm</div>
+        <div class="ms-val" id="ms-waist-val">Start: 104 cm → Cíl: 98 cm</div>
+        <div class="ms-bar-wrap" style="margin-top:5px;"><div class="ms-bar" style="background:var(--blue);" id="ms-waist-bar"></div></div>
+      </div>
     </div>
   </div>
 
-  <div id="meal-slots"></div>
-
   <div class="card">
-    <div class="label">📤 TÝDENNÍ REVIZE</div>
-    <p style="color:var(--muted);font-size:13px;margin-top:4px;">Jednou týdně zkopíruj vše a pošli do chatu.</p>
-    <button class="export-btn" onclick="copyWeek()">📊 Kopírovat celý týden</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="label">Vývoj váhy</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="setChartRange(30)">30d</button>
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="setChartRange(90)">90d</button>
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="setChartRange(180)">180d</button>
+      </div>
+    </div>
+    <canvas id="weight-chart" height="140"></canvas>
   </div>
 
+  <div class="card">
+    <div class="label" style="margin-bottom:12px;">Vývoj obvodu pasu</div>
+    <canvas id="waist-chart" height="140"></canvas>
+  </div>
+
+  <div class="card accent-purple">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="label">Týdenní skóre</div>
+      <div style="font-size:22px;font-weight:800;color:var(--purple);" id="week-score-val">—</div>
+    </div>
+    <div class="prog-bar" style="margin-top:8px;"><div class="prog-fill" style="background:var(--purple);" id="week-score-bar"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="week-score-detail">Kroky · Cviky · Doplňky · Jídlo</div>
+  </div>
+</div>
+
+<!-- ═══ JÍDELNÍK ═══ -->
+<div id="tab-food" class="tab">
+  <div class="date-scroll" id="food-date-nav"></div>
+
+  <div class="card" style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div><div class="label">Jídelník</div><div style="font-size:12px;color:var(--muted);margin-top:2px;" id="food-date-lbl">—</div></div>
+      <button class="btn btn-outline-green" style="padding:8px 12px;font-size:12px;" onclick="sendToClaudeWeek()">📋 Odeslat Claude revizi</button>
+    </div>
+    <div style="margin-top:10px;font-size:13px;color:var(--orange);font-weight:700;" id="food-kcal-total">Celkem: — kcal</div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:10px;">Denní makra (odhad)</div>
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">Bílkoviny (g)</label><input type="number" id="inp-protein" placeholder="0" onchange="saveMacros()"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">Sacharidy (g)</label><input type="number" id="inp-carbs" placeholder="0" onchange="saveMacros()"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">Tuky (g)</label><input type="number" id="inp-fat" placeholder="0" onchange="saveMacros()"></div>
+    </div>
+  </div>
+
+  <div id="meal-slots-cont"></div>
+</div>
+
+<!-- ═══ NASTAVENÍ ═══ -->
+<div id="tab-settings" class="tab">
+  <div class="card accent-green">
+    <div class="label" style="margin-bottom:10px;">Cíle</div>
+    <div class="form-group"><label>Cíl kroků/den</label><input type="number" id="set-steps-goal" placeholder="9000"></div>
+    <div class="form-group"><label>Cíl pater/den</label><input type="number" id="set-floors-goal" placeholder="15"></div>
+    <div class="form-group"><label>Cílová váha (kg)</label><input type="number" id="set-weight-goal" placeholder="80" step="0.5"></div>
+    <div class="form-group"><label>Cílový obvod pasu (cm)</label><input type="number" id="set-waist-goal" placeholder="98" step="0.5"></div>
+    <div class="form-group"><label>Připomínka ráno (doplňky)</label><input type="time" id="set-notif-morning" value="08:00"></div>
+    <div class="form-group"><label>Připomínka večer (doplňky)</label><input type="time" id="set-notif-evening" value="21:00"></div>
+    <div class="form-group">
+      <button class="btn btn-outline-green" style="width:100%;" onclick="enableNotifications()">🔔 Povolit notifikace</button>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Funguje jen pokud je appka otevřená na pozadí v Safari (iOS omezuje notifikace na pozadí). Pro spolehlivé připomínky použij iOS Zkratky + automatizaci "Časový plán".</div>
+    </div>
+    <div class="form-group"><label>Fáze tréninku</label>
+      <select id="set-phase">
+        <option value="1">Fáze 1 — Červen/Červenec (vlastní váha + gumy)</option>
+        <option value="2">Fáze 2 — Srpen (+ badminton)</option>
+        <option value="3">Fáze 3 — Září/Říjen (+ TRX)</option>
+      </select>
+    </div>
+    <button class="btn btn-green" style="width:100%;" onclick="saveSettings()">Uložit nastavení</button>
+  </div>
+
+  <div class="card accent-blue">
+    <div class="label" style="margin-bottom:10px;">Upravit plán cvičení</div>
+    <div class="day-row" id="plan-edit-days"></div>
+    <div id="plan-edit-cont"></div>
+    <button class="btn btn-outline-green" style="width:100%;margin-top:8px;" onclick="addPlanExercise()">+ Přidat cvik do dne</button>
+    <button class="btn btn-green" style="width:100%;margin-top:8px;" onclick="savePlanEdits()">Uložit plán</button>
+    <button class="btn btn-red" style="width:100%;margin-top:8px;" onclick="resetPlanToDefault()">Obnovit výchozí plán</button>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:10px;">Záloha dat</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Exportuj všechna data jako JSON soubor. Ulož do iCloud nebo emailu.</p>
+    <button class="btn btn-outline-green" style="width:100%;margin-bottom:8px;" onclick="exportData()">⬇️ Exportovat zálohu (JSON)</button>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px;" onclick="document.getElementById('import-file').click()">⬆️ Importovat zálohu</button>
+    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)">
+    <button class="btn btn-red" style="width:100%;" onclick="confirmClearData()">🗑️ Smazat všechna data</button>
+  </div>
+
+  <div class="card">
+    <div class="label">O aplikaci</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7;">
+      Fitness Tracker v2<br>
+      Data uložena lokálně v prohlížeči.<br>
+      Pravidelně exportuj zálohu!
+    </div>
+  </div>
 </div>
 
 </div><!-- /content -->
 
-<div class="toast" id="toast">Zkopírováno!</div>
+<!-- MODAL: Přidat cvik navíc -->
+<div class="modal-backdrop" id="modal-ex">
+  <div class="modal">
+    <h3>Přidat cvik navíc</h3>
+    <div class="form-group"><label>Cvik</label>
+      <select id="ex-select" onchange="fillExFromLib()">
+        <option value="">— Vybrat z knihovny —</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Nebo vlastní název</label><input type="text" id="ex-custom-name" placeholder="Název cviku"></div>
+    <div class="form-group"><label>Video URL (YouTube)</label><input type="text" id="ex-custom-url" placeholder="https://youtube.com/..."></div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;"><label>Série</label><input type="number" id="ex-sets" placeholder="3"></div>
+      <div class="form-group" style="flex:1;"><label>Opakování</label><input type="number" id="ex-reps" placeholder="12"></div>
+    </div>
+    <div class="form-group"><label>Pomůcka</label>
+      <select id="ex-tool">
+        <option value="">Vlastní váha</option>
+        <option value="guma">Guma</option>
+        <option value="trx">TRX</option>
+        <option value="činky">Činky</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-ex')">Zrušit</button>
+      <button class="btn btn-green" onclick="addExtraEx()">Přidat</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Přidat sport -->
+<div class="modal-backdrop" id="modal-sport">
+  <div class="modal">
+    <h3>Přidat sport / aktivitu</h3>
+    <div class="form-group"><label>Aktivita</label>
+      <select id="sport-select">
+        <option value="🏸 Badminton">🏸 Badminton</option>
+        <option value="🚴 Kolo">🚴 Kolo</option>
+        <option value="🧖 Sauna">🧖 Sauna</option>
+        <option value="🚶 Procházka">🚶 Procházka</option>
+        <option value="🏊 Plavání">🏊 Plavání</option>
+        <option value="🎿 Jiné">🎿 Jiné</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Vlastní název (volitelné)</label><input type="text" id="sport-custom" placeholder=""></div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;"><label>Čas (min)</label><input type="number" id="sport-time" placeholder="60"></div>
+      <div class="form-group" style="flex:1;"><label>Teplota (jen sauna °C)</label><input type="number" id="sport-temp" placeholder="80"></div>
+    </div>
+    <div class="form-group"><label>Poznámka</label><input type="text" id="sport-note" placeholder=""></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-sport')">Zrušit</button>
+      <button class="btn btn-green" onclick="addSport()">Přidat</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Přidat doplněk -->
+<div class="modal-backdrop" id="modal-supp">
+  <div class="modal">
+    <h3>Přidat doplněk</h3>
+    <div class="form-group"><label>Název</label><input type="text" id="supp-name" placeholder="Vitamín C"></div>
+    <div class="form-group"><label>Dávka</label><input type="text" id="supp-dose" placeholder="1 tableta / 5 ml"></div>
+    <div class="form-group"><label>Čas</label>
+      <select id="supp-time-sel">
+        <option value="morning">🌅 Ráno</option>
+        <option value="evening">🌙 Večer</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-supp')">Zrušit</button>
+      <button class="btn btn-green" onclick="addSupp()">Přidat</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-// ─── DATA ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
 
-const DAY_ORDER = ["Po","Ut","St","Ct","Pa","So","Ne"];
 const PLAN = {
   Po:{label:"Pondělí",type:"💪 Síla — Nohy + Core",intensity:"hard",exercises:[
-    {id:"wall_squat",name:"Dřep u zdi (Wall Squat)",sets:"3 série × 40 sec",note:"Záda na zdi, kolena 90°, levou nohu kontroluj",url:"https://www.youtube.com/watch?v=y-wV4Venusw"},
-    {id:"rev_lunge",name:"Výpad vzad (Reverse Lunge)",sets:"3 série × 8+8 opak.",note:"Začni levou, méně tlak na koleno než klasický výpad",url:"https://www.youtube.com/watch?v=xrPteyQLGAo"},
-    {id:"side_lunge",name:"Boční výpad (Side Lunge)",sets:"3 série × 10+10 opak.",note:"Posiluje stabilizátory kolena, kontrolované tempo",url:"https://www.youtube.com/watch?v=66x0qQiJ-MA"},
-    {id:"glute_bridge",name:"Glute Bridge",sets:"4 série × 15 opak.",note:"Zadní stehno + hýždě, nahoře drž 2 sec",url:"https://www.youtube.com/watch?v=wPM8icPu6H8"},
-    {id:"side_plank",name:"Boční Plank",sets:"3 série × 30 sec",note:"Obě strany, levá jako první",url:"https://www.youtube.com/watch?v=_6vjo5yFo1U"},
-    {id:"dead_bug",name:"Dead Bug",sets:"3 série × 10+10 opak.",note:"Záda na podložce, pomalé kontrolované pohyby",url:"https://www.youtube.com/watch?v=g_BYB0R-4Ws"},
+    {id:"wall_squat",name:"Dřep u zdi",en:"Wall Squat",sets:"3×40 sec",note:"Záda na zdi, kolena 90°, levou nohu kontroluj",url:"https://www.youtube.com/watch?v=y-wV4Venusw"},
+    {id:"rev_lunge",name:"Výpad vzad",en:"Reverse Lunge",sets:"3×8+8",note:"Začni levou, méně tlak na koleno",url:"https://www.youtube.com/watch?v=xrPteyQLGAo"},
+    {id:"side_lunge",name:"Boční výpad",en:"Side Lunge",sets:"3×10+10",note:"Posiluje stabilizátory kolena",url:"https://www.youtube.com/watch?v=66x0qQiJ-MA"},
+    {id:"glute_bridge",name:"Glute Bridge",en:"Glute Bridge",sets:"4×15",note:"Zadní stehno + hýždě, drž 2 sec nahoře",url:"https://www.youtube.com/watch?v=wPM8icPu6H8"},
+    {id:"side_plank",name:"Boční plank",en:"Side Plank",sets:"3×30 sec",note:"Obě strany, levá jako první",url:"https://www.youtube.com/watch?v=_6vjo5yFo1U"},
+    {id:"dead_bug",name:"Dead Bug",en:"Dead Bug",sets:"3×10+10",note:"Záda na podložce, pomalé pohyby",url:"https://www.youtube.com/watch?v=g_BYB0R-4Ws"},
   ]},
-  Ut:{label:"Úterý",type:"🚶 Aktivní den",intensity:"easy",cardioOnly:true,cardioNote:"Schody místo výtahu celý den. Procházka 45–60 min. Cíl: 9 000+ kroků."},
-  St:{label:"Středa",type:"💪 Síla — Horní část + Core",intensity:"hard",exercises:[
-    {id:"pushup",name:"Kliky",sets:"4 série × 10–12 opak.",note:"Uprav výšku dle síly (kolena → klasika → nohy výš)",url:"https://www.youtube.com/watch?v=IODxDxX7oi4"},
-    {id:"pike_pu",name:"Pike Push-up (ramena)",sets:"3 série × 10 opak.",note:"Boky nahoru, hlava mezi pažemi",url:"https://www.youtube.com/watch?v=paCOGgmLCA0"},
-    {id:"dips",name:"Triceps Dips (na židli)",sets:"3 série × 12 opak.",note:"Ruce za tělem na pevné židli, kolena pod 90°",url:"https://www.youtube.com/watch?v=rjdpMVtMehw"},
-    {id:"towel_row",name:"Řada s ručníkem ve dveřích",sets:"3 série × 12 opak.",note:"Uchop ručník, lehni zpět a táhni hrudník k rukám",url:"https://www.youtube.com/watch?v=6kALZikXxLc"},
-    {id:"plank",name:"Plank (klasický)",sets:"4 série × 45 sec",note:"Rovná linie od hlavy po paty, nezadržuj dech",url:"https://www.youtube.com/watch?v=pSHjTRCQxIw"},
-    {id:"bicycle",name:"Bicycle Crunch (pomalý)",sets:"3 série × 12+12 opak.",note:"Pomalé tempo, loket ke kolenu — ne angličáky",url:"https://www.youtube.com/watch?v=9FGilxCbdz8"},
+  Ut:{label:"Úterý",type:"🚶 Aktivní den",intensity:"easy",cardioOnly:true,cardioNote:"Schody místo výtahu. Procházka 45–60 min. Cíl: 9 000+ kroků."},
+  St:{label:"Středa",type:"💪 Síla — Horní + Core",intensity:"hard",exercises:[
+    {id:"pushup",name:"Kliky",en:"Push-up",sets:"4×10–12",note:"Uprav výšku dle síly",url:"https://www.youtube.com/watch?v=IODxDxX7oi4"},
+    {id:"pike_pu",name:"Pike klik",en:"Pike Push-up",sets:"3×10",note:"Boky nahoru, hlava mezi pažemi",url:"https://www.youtube.com/watch?v=paCOGgmLCA0"},
+    {id:"dips",name:"Triceps dips",en:"Tricep Dips",sets:"3×12",note:"Na pevné židli, ruce za tělem",url:"https://www.youtube.com/watch?v=rjdpMVtMehw"},
+    {id:"towel_row",name:"Řada s ručníkem",en:"Towel Row",sets:"3×12",note:"Uchop ručník ve dveřích, táhni hrudník",url:"https://www.youtube.com/watch?v=6kALZikXxLc"},
+    {id:"plank",name:"Plank",en:"Plank",sets:"4×45 sec",note:"Rovná linie od hlavy po paty",url:"https://www.youtube.com/watch?v=pSHjTRCQxIw"},
+    {id:"bicycle",name:"Bicycle crunch",en:"Bicycle Crunch",sets:"3×12+12",note:"Pomalé tempo, ne angličáky",url:"https://www.youtube.com/watch?v=9FGilxCbdz8"},
   ]},
-  Ct:{label:"Čtvrtek",type:"🚶 Aktivní den",intensity:"easy",cardioOnly:true,cardioNote:"Procházka 30–45 min nebo protažení kyčlí a kolen 20 min."},
-  So:{label:"Sobota",type:"🌊 Volný den",intensity:"easy",cardioOnly:true,cardioNote:"Plachtění nebo volný pohyb. Zaznamenej kroky a patra — i víkend se počítá!"},
-  Ne:{label:"Neděle",type:"😴 Odpočinek",intensity:"easy",cardioOnly:true,cardioNote:"Aktivní odpočinek — procházka, protažení. Příprava na nový týden."},
+  Ct:{label:"Čtvrtek",type:"🚶 Aktivní den",intensity:"easy",cardioOnly:true,cardioNote:"Procházka 30–45 min nebo protažení kyčlí 20 min."},
   Pa:{label:"Pátek",type:"🏋️ Funkční — Celé tělo",intensity:"medium",exercises:[
-    {id:"squat",name:"Dřep (Squat)",sets:"4 série × 15 opak.",note:"Pomalé tempo dolů (3 sec), výbušně nahoru",url:"https://www.youtube.com/watch?v=aclHkVaku9U"},
-    {id:"step_up",name:"Výstup na schod/židli (Step-up)",sets:"3 série × 10+10 opak.",note:"Začínáš levou, kontrolovaný sestup",url:"https://www.youtube.com/watch?v=dQqApCGd5Ss"},
-    {id:"pushup2",name:"Kliky",sets:"3 série × 12 opak.",note:"Stejná technika jako ve středu",url:"https://www.youtube.com/watch?v=IODxDxX7oi4"},
-    {id:"superman",name:"Superman",sets:"3 série × 12 opak.",note:"Vleže na břiše, zvedej protilehlou ruku + nohu",url:"https://www.youtube.com/watch?v=cc6UVRS7PW4"},
-    {id:"sg_bridge",name:"Glute Bridge jednožkový",sets:"3 série × 10+10 opak.",note:"Levá jako první — klíčový cvik pro vyrovnání nohou",url:"https://www.youtube.com/watch?v=LL2HGFgUHSg"},
-    {id:"hollow",name:"Hollow Body Hold",sets:"3 série × 20 sec",note:"Na zádech, ruce+nohy nízko nad zemí, záda přitlačená",url:"https://www.youtube.com/watch?v=LlDNef_Ztsc"},
+    {id:"squat",name:"Dřep",en:"Squat",sets:"4×15",note:"Pomalé dolů (3 sec), výbušně nahoru",url:"https://www.youtube.com/watch?v=aclHkVaku9U"},
+    {id:"step_up",name:"Výstup na schod",en:"Step-up",sets:"3×10+10",note:"Začínáš levou, kontrolovaný sestup",url:"https://www.youtube.com/watch?v=dQqApCGd5Ss"},
+    {id:"pushup2",name:"Kliky",en:"Push-up",sets:"3×12",note:"Stejná technika jako ve středu",url:"https://www.youtube.com/watch?v=IODxDxX7oi4"},
+    {id:"superman",name:"Superman",en:"Superman",sets:"3×12",note:"Vleže na břiše, zvedej protilehlé končetiny",url:"https://www.youtube.com/watch?v=cc6UVRS7PW4"},
+    {id:"sg_bridge",name:"Glute bridge jednožkový",en:"Single-leg Glute Bridge",sets:"3×10+10",note:"Levá jako první",url:"https://www.youtube.com/watch?v=LL2HGFgUHSg"},
+    {id:"hollow",name:"Hollow body hold",en:"Hollow Body Hold",sets:"3×20 sec",note:"Na zádech, záda přitlačená k podložce",url:"https://www.youtube.com/watch?v=LlDNef_Ztsc"},
   ]},
+  So:{label:"Sobota",type:"🌊 Volný den",intensity:"easy",cardioOnly:true,cardioNote:"Létání větroně nebo volný pohyb. Zaznamenej kroky a patra."},
+  Ne:{label:"Neděle",type:"😴 Odpočinek",intensity:"easy",cardioOnly:true,cardioNote:"Aktivní odpočinek. Příprava na nový týden. Nezapomeň na týdenní revizi!"},
 };
+const DAY_ORDER=["Po","Ut","St","Ct","Pa","So","Ne"];
 
-const MEAL_SLOTS = [
-  {id:"snidane",label:"🌅 Snídaně",placeholder:"Ovesná kaše, vejce...",rows:2},
-  {id:"svacina1",label:"🍎 Svačina dopoledne",placeholder:"Ovoce, tvaroh...",rows:2},
-  {id:"obed",label:"🍽️ Oběd",placeholder:"Česká klasika — opiš co jsi měl",rows:3},
-  {id:"svacina2",label:"☕ Svačina odpoledne",placeholder:"Ořechy, jogurt...",rows:2},
-  {id:"vecere",label:"🌙 Večeře",placeholder:"Kuřecí + rýže + brokolice...",rows:3},
-  {id:"pochutiny",label:"🍺 Pochutiny / navíc",placeholder:"Pivo, čokoláda, chipsy...",rows:2},
+(function applyPlanOverrides(){
+  const saved=load("plan-data",null);
+  if(saved)DAY_ORDER.forEach(k=>{if(saved[k])PLAN[k]=saved[k];});
+})();
+
+const EX_LIBRARY=[
+  {name:"Dřep u zdi / Wall Squat",url:"https://www.youtube.com/watch?v=y-wV4Venusw",cat:"Vlastní váha"},
+  {name:"Výpad vzad / Reverse Lunge",url:"https://www.youtube.com/watch?v=xrPteyQLGAo",cat:"Vlastní váha"},
+  {name:"Boční výpad / Side Lunge",url:"https://www.youtube.com/watch?v=66x0qQiJ-MA",cat:"Vlastní váha"},
+  {name:"Glute Bridge",url:"https://www.youtube.com/watch?v=wPM8icPu6H8",cat:"Vlastní váha"},
+  {name:"Boční plank / Side Plank",url:"https://www.youtube.com/watch?v=_6vjo5yFo1U",cat:"Vlastní váha"},
+  {name:"Dead Bug",url:"https://www.youtube.com/watch?v=g_BYB0R-4Ws",cat:"Vlastní váha"},
+  {name:"Kliky / Push-up",url:"https://www.youtube.com/watch?v=IODxDxX7oi4",cat:"Vlastní váha"},
+  {name:"Pike klik / Pike Push-up",url:"https://www.youtube.com/watch?v=paCOGgmLCA0",cat:"Vlastní váha"},
+  {name:"Triceps dips",url:"https://www.youtube.com/watch?v=rjdpMVtMehw",cat:"Vlastní váha"},
+  {name:"Dřep / Squat",url:"https://www.youtube.com/watch?v=aclHkVaku9U",cat:"Vlastní váha"},
+  {name:"Výstup na schod / Step-up",url:"https://www.youtube.com/watch?v=dQqApCGd5Ss",cat:"Vlastní váha"},
+  {name:"Superman",url:"https://www.youtube.com/watch?v=cc6UVRS7PW4",cat:"Vlastní váha"},
+  {name:"Hollow Body Hold",url:"https://www.youtube.com/watch?v=LlDNef_Ztsc",cat:"Vlastní váha"},
+  {name:"Plank",url:"https://www.youtube.com/watch?v=pSHjTRCQxIw",cat:"Vlastní váha"},
+  {name:"Bicycle Crunch",url:"https://www.youtube.com/watch?v=9FGilxCbdz8",cat:"Vlastní váha"},
+  {name:"Squat s gumou / Banded Squat",url:"https://www.youtube.com/watch?v=CLn-mLBcNqM",cat:"Gumy"},
+  {name:"Bicep curl s gumou / Band Curl",url:"https://www.youtube.com/watch?v=oCRx5xQfA-A",cat:"Gumy"},
+  {name:"Triceps press s gumou / Band Tricep",url:"https://www.youtube.com/watch?v=5IqMGBxkX_0",cat:"Gumy"},
+  {name:"Řada s gumou / Band Row",url:"https://www.youtube.com/watch?v=xQNrFHEMhI4",cat:"Gumy"},
+  {name:"Tlak s gumou nad hlavu / Band Press",url:"https://www.youtube.com/watch?v=yPFMqFgQVoY",cat:"Gumy"},
+  {name:"Glute bridge s gumou",url:"https://www.youtube.com/watch?v=wPM8icPu6H8",cat:"Gumy"},
+  {name:"TRX Row / Řada na TRX",url:"https://www.youtube.com/results?search_query=TRX+row+tutorial",cat:"TRX"},
+  {name:"TRX Chest Press / Tlak na hrudník",url:"https://www.youtube.com/results?search_query=TRX+chest+press+tutorial",cat:"TRX"},
+  {name:"TRX Squat / Dřep na TRX",url:"https://www.youtube.com/results?search_query=TRX+squat+tutorial",cat:"TRX"},
+  {name:"TRX Lunge / Výpad na TRX",url:"https://www.youtube.com/results?search_query=TRX+lunge+tutorial",cat:"TRX"},
+  {name:"TRX Hamstring Curl",url:"https://www.youtube.com/results?search_query=TRX+hamstring+curl+tutorial",cat:"TRX"},
+  {name:"TRX Pike",url:"https://www.youtube.com/results?search_query=TRX+pike+tutorial",cat:"TRX"},
+  {name:"TRX Tricep Press",url:"https://www.youtube.com/results?search_query=TRX+tricep+press+tutorial",cat:"TRX"},
+  {name:"TRX Bicep Curl",url:"https://www.youtube.com/results?search_query=TRX+bicep+curl+tutorial",cat:"TRX"},
+  {name:"TRX Plank",url:"https://www.youtube.com/results?search_query=TRX+plank+tutorial",cat:"TRX"},
+  {name:"TRX Y-Fly / Rozpažky",url:"https://www.youtube.com/results?search_query=TRX+Y-fly+tutorial",cat:"TRX"},
 ];
 
-// ─── UTILS ─────────────────────────────────────────────────────────────────
+const DEFAULT_SUPPS=[
+  {id:"mollers",name:"Möller's Omega 3 D+",dose:"1 lžička (5 ml)",time:"morning"},
+  {id:"selen",name:"MedPharma Selen Zinek",dose:"1 tableta",time:"morning"},
+  {id:"alavis",name:"Alavis MSM",dose:"dle návodu",time:"morning"},
+  {id:"perga",name:"Perga",dose:"5–10 g",time:"morning"},
+  {id:"horcik",name:"Hořčík Citrát + B6",dose:"1 tableta",time:"evening"},
+];
 
-function todayKey(){
-  const d=new Date();
-  return d.toISOString().slice(0,10);
-}
+const MEAL_SLOTS=[
+  {id:"snidane",label:"🌅 Snídaně"},
+  {id:"svacina1",label:"🍎 Svačina dopoledne"},
+  {id:"obed",label:"🍽️ Oběd"},
+  {id:"svacina2",label:"☕ Svačina odpoledne"},
+  {id:"vecere",label:"🌙 Večeře"},
+  {id:"pochutiny",label:"🍺 Pochutiny / navíc"},
+];
 
-function load(k,fb){
-  try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}
-}
-function save(k,v){
-  try{localStorage.setItem(k,JSON.stringify(v));}catch{}
-}
+// ═══ UTILS ═══
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function load(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch{showToast("⚠️ Úložiště je plné — data se neuložila!");return false;}}
+function getDayKey(d){return["Ne","Po","Ut","St","Ct","Pa","So"][new Date(d+"T12:00:00").getDay()];}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+function openModal(id){document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
 
-function getDayKey(dateStr){
-  const d=new Date(dateStr+'T12:00:00');
-  return ["Ne","Po","Ut","St","Ct","Pa","So"][d.getDay()];
-}
-
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg||'Zkopírováno!';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
-
-// ─── STATE ─────────────────────────────────────────────────────────────────
-
-let activeTab='workout';
+// ═══ STATE ═══
+let activeTab="workout";
 let activeDay=null;
 let selectedDate=todayKey();
+let currentMood=0;
+let weightChart=null;
+let waistChart=null;
+let chartRange=90;
+
 const todayDayKey=getDayKey(todayKey());
+if(PLAN[todayDayKey])activeDay=todayDayKey;else activeDay="Po";
 
-// init activeDay
-if(PLAN[todayDayKey]) activeDay=todayDayKey;
-else activeDay='Po';
-
-// ─── TAB SWITCH ────────────────────────────────────────────────────────────
-
-function switchTab(tab){
-  activeTab=tab;
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  event.currentTarget.classList.add('active');
+// ═══ SETTINGS ═══
+function getSettings(){return load("settings",{stepsGoal:9000,floorsGoal:15,weightGoal:80,waistGoal:98,phase:1,notifMorning:"08:00",notifEvening:"21:00"});}
+function saveSettings(){
+  const s={stepsGoal:parseInt(document.getElementById("set-steps-goal").value)||9000,floorsGoal:parseInt(document.getElementById("set-floors-goal").value)||15,weightGoal:parseFloat(document.getElementById("set-weight-goal").value)||80,waistGoal:parseFloat(document.getElementById("set-waist-goal").value)||98,phase:parseInt(document.getElementById("set-phase").value)||1,notifMorning:document.getElementById("set-notif-morning").value||"08:00",notifEvening:document.getElementById("set-notif-evening").value||"21:00"};
+  save("settings",s);updateHeader();renderWorkout();showToast("Nastavení uloženo ✓");
+}
+function loadSettingsUI(){
+  const s=getSettings();
+  document.getElementById("set-steps-goal").value=s.stepsGoal;
+  document.getElementById("set-floors-goal").value=s.floorsGoal;
+  document.getElementById("set-weight-goal").value=s.weightGoal;
+  document.getElementById("set-waist-goal").value=s.waistGoal;
+  document.getElementById("set-phase").value=s.phase;
+  document.getElementById("set-notif-morning").value=s.notifMorning||"08:00";
+  document.getElementById("set-notif-evening").value=s.notifEvening||"21:00";
 }
 
-// ─── WORKOUT ───────────────────────────────────────────────────────────────
+// ═══ NOTIFICATIONS (best-effort, app must stay open) ═══
+function enableNotifications(){
+  if(!("Notification" in window)){showToast("Notifikace nejsou podporovány");return;}
+  Notification.requestPermission().then(perm=>{
+    if(perm==="granted"){showToast("Notifikace povoleny ✓");startNotifWatcher();}
+    else showToast("Notifikace zamítnuty");
+  });
+}
+let notifWatcherStarted=false;
+function startNotifWatcher(){
+  if(notifWatcherStarted)return;notifWatcherStarted=true;
+  setInterval(checkNotifTimes,30000);
+}
+function checkNotifTimes(){
+  if(Notification.permission!=="granted")return;
+  const s=getSettings();
+  const now=new Date();
+  const hhmm=now.toTimeString().slice(0,5);
+  const today=todayKey();
+  const fired=load("notif-fired-"+today,{});
+  if(hhmm===s.notifMorning&&!fired.morning){
+    new Notification("💊 Ranní doplňky",{body:"Nezapomeň na ranní doplňky a snídani (IF dle plánu)."});
+    fired.morning=true;save("notif-fired-"+today,fired);
+  }
+  if(hhmm===s.notifEvening&&!fired.evening){
+    new Notification("💊 Večerní doplňky",{body:"Nezapomeň na hořčík a zapsat dnešní míry."});
+    fired.evening=true;save("notif-fired-"+today,fired);
+  }
+}
+if("Notification" in window && Notification.permission==="granted")startNotifWatcher();
 
-function buildDayButtons(){
-  const cont=document.getElementById('day-buttons');
-  cont.innerHTML='';
+// ═══ HEADER ═══
+function lastWithField(metrics,field){
+  for(let i=metrics.length-1;i>=0;i--){
+    if(metrics[i][field]!=null)return metrics[i][field];
+  }
+  return null;
+}
+function updateHeader(){
+  const s=getSettings();
+  document.getElementById("hdr-phase").textContent=s.phase;
+  const metrics=load("body-metrics",[]);
+  document.getElementById("hdr-weight").textContent=lastWithField(metrics,"weight")||"—";
+  document.getElementById("hdr-waist").textContent=lastWithField(metrics,"waist")||"—";
+}
+
+// ═══ TAB SWITCH ═══
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll(".tab").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  event.currentTarget.classList.add("active");
+  if(tab==="body")renderBodyTab();
+  if(tab==="food")renderFoodTab();
+  if(tab==="supps")renderSupps();
+  if(tab==="settings"){loadSettingsUI();renderPlanEditor();}
+}
+
+// ═══ PLAN EDITOR ═══
+let planEditDay=null;
+function renderPlanEditor(){
+  if(!planEditDay)planEditDay=activeDay||DAY_ORDER[0];
+  const cont=document.getElementById("plan-edit-days");cont.innerHTML="";
   DAY_ORDER.forEach(key=>{
-    const day=PLAN[key];
-    if(!day) return;
-    const btn=document.createElement('button');
-    btn.className='day-btn'+(key===activeDay?' active':'')+(key===todayDayKey&&key!==activeDay?' today':'');
-    const emoji=day.intensity==='hard'?'🔥':day.intensity==='easy'?'🚶':'💪';
-    btn.innerHTML=`${day.label}<span class="day-emoji">${emoji}</span>`;
+    const day=PLAN[key];if(!day)return;
+    const btn=document.createElement("button");
+    btn.className="day-btn"+(key===planEditDay?" active":"");
+    btn.textContent=day.label;
+    btn.onclick=()=>{planEditDay=key;renderPlanEditor();};
+    cont.appendChild(btn);
+  });
+  renderPlanEditExercises();
+}
+
+function renderPlanEditExercises(){
+  const cont=document.getElementById("plan-edit-cont");cont.innerHTML="";
+  const day=PLAN[planEditDay];
+  if(!day)return;
+  if(!day.exercises){
+    cont.innerHTML=`<div class="form-group" style="margin-top:10px;"><label>Tento den je aktivní/volný (bez seznamu cviků) — popis dne</label><textarea id="plan-cardio-note" rows="2">${day.cardioNote||""}</textarea></div>`;
+    return;
+  }
+  day.exercises.forEach((ex,i)=>{
+    const row=document.createElement("div");row.className="extra-ex-card";row.style.marginTop="10px";
+    row.innerHTML=`
+      <div class="form-group"><label>Název (CZ)</label><input type="text" value="${ex.name||""}" onchange="updatePlanEx(${i},'name',this.value)"></div>
+      <div class="form-group"><label>Název (EN)</label><input type="text" value="${ex.en||""}" onchange="updatePlanEx(${i},'en',this.value)"></div>
+      <div class="form-group"><label>Série × opakování</label><input type="text" value="${ex.sets||""}" onchange="updatePlanEx(${i},'sets',this.value)"></div>
+      <div class="form-group"><label>Poznámka / technika</label><input type="text" value="${ex.note||""}" onchange="updatePlanEx(${i},'note',this.value)"></div>
+      <div class="form-group"><label>YouTube URL</label><input type="text" value="${ex.url||""}" onchange="updatePlanEx(${i},'url',this.value)"></div>
+      <button class="btn btn-red" style="width:100%;" onclick="removePlanEx(${i})">🗑️ Smazat cvik</button>
+    `;
+    cont.appendChild(row);
+  });
+}
+
+function updatePlanEx(i,field,val){
+  PLAN[planEditDay].exercises[i][field]=val;
+}
+
+function removePlanEx(i){
+  if(!confirm("Smazat tento cvik z plánu?"))return;
+  PLAN[planEditDay].exercises.splice(i,1);
+  renderPlanEditExercises();
+}
+
+function addPlanExercise(){
+  const day=PLAN[planEditDay];
+  if(!day.exercises){showToast("Tento den nemá seznam cviků (je aktivní/volný) — uprav popis dne místo toho");return;}
+  day.exercises.push({id:"custom_"+Date.now(),name:"Nový cvik",en:"",sets:"3×12",note:"",url:""});
+  renderPlanEditExercises();
+}
+
+function savePlanEdits(){
+  const day=PLAN[planEditDay];
+  if(!day.exercises){
+    const noteEl=document.getElementById("plan-cardio-note");
+    if(noteEl)day.cardioNote=noteEl.value;
+  }
+  save("plan-data",PLAN);
+  renderWorkout();
+  showToast("Plán uložen ✓");
+}
+
+function resetPlanToDefault(){
+  if(!confirm("Obnovit výchozí plán cvičení? Vlastní úpravy se ztratí."))return;
+  localStorage.removeItem("plan-data");
+  location.reload();
+}
+
+// ═══ WORKOUT ═══
+function buildDayBtns(){
+  const cont=document.getElementById("day-btns");cont.innerHTML="";
+  DAY_ORDER.forEach(key=>{
+    const day=PLAN[key];if(!day)return;
+    const btn=document.createElement("button");
+    btn.className="day-btn"+(key===activeDay?" active":"")+(key===todayDayKey&&key!==activeDay?" today":"");
+    const em=day.intensity==="hard"?"🔥":day.intensity==="easy"?"🚶":"💪";
+    btn.innerHTML=`${day.label}<span class="day-emoji">${em}</span>`;
     btn.onclick=()=>{activeDay=key;renderWorkout();};
     cont.appendChild(btn);
   });
 }
 
 function renderWorkout(){
-  buildDayButtons();
+  buildDayBtns();
   const plan=PLAN[activeDay];
   const today=todayKey();
-
-  // Header
-  document.getElementById('day-type-label').textContent=plan.type;
-  document.getElementById('today-date-label').textContent=
-    new Date().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
-
-  // Load checked
-  const checked=load('workout-'+today,{});
+  document.getElementById("day-type-lbl").textContent=plan.type;
+  document.getElementById("today-lbl").textContent=new Date().toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
+  const checked=load("workout-"+today,{});
   const exs=plan.exercises||[];
   const done=exs.filter(e=>checked[e.id]).length;
   const total=exs.length;
-
-  // Ring
-  const circ=2*Math.PI*32;
+  const circ=2*Math.PI*28;
   const pct=total>0?done/total:0;
-  document.getElementById('ring-circle').style.strokeDashoffset=circ*(1-pct);
-  document.getElementById('ring-text').textContent=total>0?`${done}/${total}`:'✓';
-
-  // Cardio inputs
-  const cardio=load('cardio-'+today,{steps:'',floors:''});
-  document.getElementById('input-steps').value=cardio.steps||'';
-  document.getElementById('input-floors').value=cardio.floors||'';
+  document.getElementById("ring-c").style.strokeDashoffset=circ*(1-pct);
+  document.getElementById("ring-txt").textContent=total>0?`${done}/${total}`:"✓";
+  const cardio=load("cardio-"+today,{steps:"",floors:""});
+  document.getElementById("inp-steps").value=cardio.steps||"";
+  document.getElementById("inp-floors").value=cardio.floors||"";
   updateBars();
-
-  // Exercises
-  const cont=document.getElementById('exercises-container');
-  cont.innerHTML='';
-
+  const cont=document.getElementById("exercises-cont");cont.innerHTML="";
   if(plan.cardioOnly){
-    cont.innerHTML=`<div class="card green-left"><div class="label">DEN AKTIVITY</div><p class="cardio-note">${plan.cardioNote}</p></div>`;
-    return;
+    cont.innerHTML=`<div class="card accent-green"><div class="label">Aktivní den</div><p style="color:var(--text);margin-top:8px;font-size:14px;line-height:1.6;">${plan.cardioNote}</p></div>`;
+  } else {
+    exs.forEach(ex=>{
+      const isDone=!!checked[ex.id];
+      const d=document.createElement("div");
+      d.className="ex-card"+(isDone?" done":"");d.id="exc-"+ex.id;
+      d.innerHTML=`<div class="ex-row"><button class="checkbox${isDone?" checked":""}" onclick="toggleEx('${ex.id}')" id="chk-${ex.id}">${isDone?"✓":""}</button><div style="flex:1;"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;"><span class="ex-name${isDone?" done":""}" id="exn-${ex.id}">${ex.name}</span><span class="ex-en">${ex.en}</span><a href="${ex.url}" target="_blank" class="ex-link">▶</a></div><div class="ex-sets">${ex.sets}</div><div class="ex-note">💡 ${ex.note}</div></div></div>`;
+      cont.appendChild(d);
+    });
   }
-
-  exs.forEach(ex=>{
-    const isDone=!!checked[ex.id];
-    const card=document.createElement('div');
-    card.className='ex-card'+(isDone?' done':'');
-    card.id='excard-'+ex.id;
-    card.innerHTML=`
-      <div class="ex-row">
-        <button class="checkbox${isDone?' checked':''}" onclick="toggleEx('${ex.id}')" id="chk-${ex.id}">${isDone?'✓':''}</button>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
-            <span class="ex-name${isDone?' done':''}" id="exname-${ex.id}">${ex.name}</span>
-            <a href="${ex.url}" target="_blank" class="ex-link">▶ video</a>
-          </div>
-          <div class="ex-sets">${ex.sets}</div>
-          <div class="ex-note">💡 ${ex.note}</div>
-        </div>
-      </div>`;
-    cont.appendChild(card);
-  });
+  renderExtraEx();
+  renderSportsToday();
 }
 
 function toggleEx(id){
-  const today=todayKey();
-  const checked=load('workout-'+today,{});
-  checked[id]=!checked[id];
-  save('workout-'+today,checked);
-
-  // Update UI without full re-render
+  const today=todayKey();const checked=load("workout-"+today,{});
+  checked[id]=!checked[id];save("workout-"+today,checked);
   const isDone=checked[id];
-  const chk=document.getElementById('chk-'+id);
-  const name=document.getElementById('exname-'+id);
-  const card=document.getElementById('excard-'+id);
-  if(chk){chk.className='checkbox'+(isDone?' checked':'');chk.textContent=isDone?'✓':'';}
-  if(name){name.className='ex-name'+(isDone?' done':'');}
-  if(card){card.className='ex-card'+(isDone?' done':'');}
-
-  // Update ring
-  const plan=PLAN[activeDay];
-  const exs=plan.exercises||[];
-  const done=exs.filter(e=>checked[e.id]).length;
-  const total=exs.length;
-  const circ=2*Math.PI*32;
-  const pct=total>0?done/total:0;
-  document.getElementById('ring-circle').style.strokeDashoffset=circ*(1-pct);
-  document.getElementById('ring-text').textContent=`${done}/${total}`;
+  const chk=document.getElementById("chk-"+id);
+  const nm=document.getElementById("exn-"+id);
+  const card=document.getElementById("exc-"+id);
+  if(chk){chk.className="checkbox"+(isDone?" checked":"");chk.textContent=isDone?"✓":"";}
+  if(nm)nm.className="ex-name"+(isDone?" done":"");
+  if(card)card.className="ex-card"+(isDone?" done":"");
+  const plan=PLAN[activeDay];const exs=plan.exercises||[];
+  const done=exs.filter(e=>checked[e.id]).length;const total=exs.length;
+  const circ=2*Math.PI*28;document.getElementById("ring-c").style.strokeDashoffset=circ*(1-(total>0?done/total:0));
+  document.getElementById("ring-txt").textContent=`${done}/${total}`;
 }
 
 function saveCardio(){
   const today=todayKey();
-  const steps=document.getElementById('input-steps').value;
-  const floors=document.getElementById('input-floors').value;
-  save('cardio-'+today,{steps,floors});
+  save("cardio-"+today,{steps:document.getElementById("inp-steps").value,floors:document.getElementById("inp-floors").value});
   updateBars();
 }
 
 function updateBars(){
-  const steps=parseInt(document.getElementById('input-steps').value)||0;
-  const floors=parseInt(document.getElementById('input-floors').value)||0;
-  document.getElementById('bar-steps').style.width=Math.min(100,(steps/9000)*100)+'%';
-  document.getElementById('bar-floors').style.width=Math.min(100,(floors/15)*100)+'%';
-  document.getElementById('steps-label').textContent=`${steps.toLocaleString('cs-CZ')} / 9 000`;
-  document.getElementById('floors-label').textContent=`${floors} / 15`;
+  const s=getSettings();
+  const steps=parseInt(document.getElementById("inp-steps").value)||0;
+  const floors=parseInt(document.getElementById("inp-floors").value)||0;
+  document.getElementById("bar-steps").style.width=Math.min(100,(steps/s.stepsGoal)*100)+"%";
+  document.getElementById("bar-floors").style.width=Math.min(100,(floors/s.floorsGoal)*100)+"%";
+  document.getElementById("steps-lbl").textContent=`${steps.toLocaleString("cs-CZ")} / ${s.stepsGoal.toLocaleString("cs-CZ")}`;
+  document.getElementById("floors-lbl").textContent=`${floors} / ${s.floorsGoal}`;
 }
 
-// ─── FOOD ──────────────────────────────────────────────────────────────────
+// ═══ EXTRA EXERCISES ═══
+function renderExtraEx(){
+  const today=todayKey();
+  const extras=load("extra-ex-"+today,[]);
+  let cont=document.getElementById("exercises-cont");
+  let existing=document.getElementById("extra-ex-sect");
+  if(existing)existing.remove();
+  if(!extras.length)return;
+  const sect=document.createElement("div");sect.id="extra-ex-sect";
+  sect.innerHTML=`<div class="section-title">Přidané cviky</div>`;
+  extras.forEach((ex,i)=>{
+    const d=document.createElement("div");d.className="extra-ex-card";
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-weight:700;font-size:14px;">${ex.name}</div><div style="color:var(--orange);font-size:12px;margin-top:2px;">${ex.sets} sérií × ${ex.reps} opak.${ex.tool?" · "+ex.tool:""}</div>${ex.url?`<a href="${ex.url}" target="_blank" class="ex-link" style="font-size:11px;">▶ video</a>`:""}</div><button onclick="removeExtraEx(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0;">×</button></div>`;
+    sect.appendChild(d);
+  });
+  cont.appendChild(sect);
+}
 
-function buildDateNav(){
-  const cont=document.getElementById('date-nav');
-  cont.innerHTML='';
-  const days=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);
-    days.push(d.toISOString().slice(0,10));
+function openAddExModal(){
+  const sel=document.getElementById("ex-select");sel.innerHTML=`<option value="">— Vybrat z knihovny —</option>`;
+  const cats={};EX_LIBRARY.forEach(e=>{if(!cats[e.cat])cats[e.cat]=[];cats[e.cat].push(e);});
+  Object.entries(cats).forEach(([cat,items])=>{
+    const og=document.createElement("optgroup");og.label=cat;og.style.color="#E8EAF0";og.style.background="#1A1F2E";
+    items.forEach(e=>{const o=document.createElement("option");o.value=e.name;o.dataset.url=e.url;o.textContent=e.name;o.style.color="#E8EAF0";o.style.background="#1A1F2E";og.appendChild(o);});
+    sel.appendChild(og);
+  });
+  document.getElementById("ex-custom-name").value="";
+  document.getElementById("ex-custom-url").value="";
+  document.getElementById("ex-sets").value="3";
+  document.getElementById("ex-reps").value="12";
+  document.getElementById("ex-tool").value="";
+  openModal("modal-ex");
+}
+
+function fillExFromLib(){
+  const sel=document.getElementById("ex-select");
+  const opt=sel.options[sel.selectedIndex];
+  if(opt&&opt.dataset.url){
+    document.getElementById("ex-custom-url").value=opt.dataset.url;
+    document.getElementById("ex-custom-name").value=opt.value;
   }
+}
+
+function addExtraEx(){
+  const name=document.getElementById("ex-custom-name").value||document.getElementById("ex-select").value;
+  if(!name){showToast("Zadej název cviku");return;}
+  const today=todayKey();
+  const extras=load("extra-ex-"+today,[]);
+  extras.push({name,sets:parseInt(document.getElementById("ex-sets").value)||3,reps:parseInt(document.getElementById("ex-reps").value)||12,tool:document.getElementById("ex-tool").value,url:document.getElementById("ex-custom-url").value});
+  save("extra-ex-"+today,extras);
+  closeModal("modal-ex");renderExtraEx();showToast("Cvik přidán ✓");
+}
+
+function removeExtraEx(i){
+  const today=todayKey();const extras=load("extra-ex-"+today,[]);
+  extras.splice(i,1);save("extra-ex-"+today,extras);renderExtraEx();
+}
+
+// ═══ SPORTS ═══
+function renderSportsToday(){
+  const today=todayKey();const sports=load("sports-"+today,[]);
+  let cont=document.getElementById("sports-today-cont");cont.innerHTML="";
+  if(!sports.length)return;
+  const sect=document.createElement("div");
+  sect.innerHTML=`<div class="section-title">Sporty & aktivity</div>`;
+  sports.forEach((s,i)=>{
+    const d=document.createElement("div");d.className="sport-card";
+    const icon=s.name.split(" ")[0];
+    d.innerHTML=`<div class="sport-icon">${icon}</div><div style="flex:1;"><div class="sport-name">${s.name}</div><div class="sport-meta">${s.time?s.time+" min":""}${s.temp?" · "+s.temp+"°C":""}${s.note?" · "+s.note:""}</div></div><button onclick="removeSport(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:20px;padding:0;">×</button>`;
+    sect.appendChild(d);
+  });
+  cont.appendChild(sect);
+}
+
+function openAddSportModal(){
+  document.getElementById("sport-custom").value="";
+  document.getElementById("sport-time").value="";
+  document.getElementById("sport-temp").value="";
+  document.getElementById("sport-note").value="";
+  openModal("modal-sport");
+}
+
+function addSport(){
+  const name=document.getElementById("sport-custom").value||document.getElementById("sport-select").value;
+  const today=todayKey();const sports=load("sports-"+today,[]);
+  sports.push({name,time:document.getElementById("sport-time").value,temp:document.getElementById("sport-temp").value,note:document.getElementById("sport-note").value});
+  save("sports-"+today,sports);closeModal("modal-sport");renderSportsToday();showToast("Aktivita přidána ✓");
+}
+
+function removeSport(i){
+  const today=todayKey();const sports=load("sports-"+today,[]);
+  sports.splice(i,1);save("sports-"+today,sports);renderSportsToday();
+}
+
+// ═══ SUPPLEMENTS ═══
+function getSupps(){
+  const stored=load("supps-list",null);
+  if(!stored)save("supps-list",DEFAULT_SUPPS);
+  return load("supps-list",DEFAULT_SUPPS);
+}
+
+function renderSupps(){
+  const today=todayKey();
+  const supps=getSupps();
+  const checked=load("supps-"+today,{});
+  const morning=supps.filter(s=>s.time==="morning");
+  const evening=supps.filter(s=>s.time==="evening");
+  const done=supps.filter(s=>checked[s.id]).length;
+  document.getElementById("supp-progress-lbl").textContent=`${done} z ${supps.length} vzato`;
+  document.getElementById("supps-morning-list").innerHTML="";
+  document.getElementById("supps-evening-list").innerHTML="";
+  [["morning",morning],["evening",evening]].forEach(([t,list])=>{
+    const cont=document.getElementById("supps-"+t+"-list");
+    list.forEach(s=>{
+      const isDone=!!checked[s.id];
+      const d=document.createElement("div");d.className="supp-card";
+      d.innerHTML=`<button class="supp-check${isDone?" checked":""}" onclick="toggleSupp('${s.id}')" id="sc-${s.id}">${isDone?"✓":""}</button><div style="flex:1;"><div class="supp-name" style="${isDone?"text-decoration:line-through;color:var(--muted);":""}">${s.name}</div><div class="supp-dose">${s.dose}</div></div><button onclick="removeSupp('${s.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0 4px;">×</button>`;
+      cont.appendChild(d);
+    });
+  });
+  renderSuppHistory(supps);
+}
+
+function renderSuppHistory(supps){
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
+  const table=document.getElementById("supp-history-table");
+  let head="<tr><th style='text-align:left;padding:4px;color:var(--muted);'>Doplněk</th>"+days.map(d=>{
+    const lbl=new Date(d+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"});
+    return `<th style='padding:4px;color:var(--muted);font-weight:600;'>${lbl}</th>`;
+  }).join("")+"</tr>";
+  let rows=supps.map(s=>{
+    const cells=days.map(d=>{
+      const checked=load("supps-"+d,{});
+      const ok=!!checked[s.id];
+      return `<td style='text-align:center;padding:4px;color:${ok?"var(--green)":"var(--muted)"};'>${ok?"✓":"·"}</td>`;
+    }).join("");
+    return `<tr><td style='padding:4px;font-weight:600;'>${s.name}</td>${cells}</tr>`;
+  }).join("");
+  table.innerHTML=head+rows;
+}
+
+function toggleSupp(id){
+  const today=todayKey();const checked=load("supps-"+today,{});
+  checked[id]=!checked[id];save("supps-"+today,checked);renderSupps();
+}
+
+function openAddSuppModal(){
+  document.getElementById("supp-name").value="";
+  document.getElementById("supp-dose").value="";
+  openModal("modal-supp");
+}
+
+function addSupp(){
+  const name=document.getElementById("supp-name").value;
+  if(!name){showToast("Zadej název");return;}
+  const supps=getSupps();
+  supps.push({id:"supp_"+Date.now(),name,dose:document.getElementById("supp-dose").value,time:document.getElementById("supp-time-sel").value});
+  save("supps-list",supps);closeModal("modal-supp");renderSupps();showToast("Doplněk přidán ✓");
+}
+
+function removeSupp(id){
+  if(!confirm("Odebrat doplněk?"))return;
+  const supps=getSupps().filter(s=>s.id!==id);save("supps-list",supps);renderSupps();
+}
+
+// ═══ BODY METRICS ═══
+let currentMoodVal=0;
+function setMood(v){
+  currentMoodVal=v;
+  document.querySelectorAll(".mood-btn").forEach((b,i)=>b.classList.toggle("active",i+1===v));
+}
+
+function saveBodyMetrics(){
+  const w=parseFloat(document.getElementById("inp-weight").value);
+  const ws=parseFloat(document.getElementById("inp-waist").value);
+  const sl=parseFloat(document.getElementById("inp-sleep").value);
+  const noteVal=document.getElementById("inp-note").value;
+  if(!w&&!ws&&!sl&&!currentMoodVal&&!noteVal){showToast("Zadej aspoň jednu hodnotu");return;}
+  const metrics=load("body-metrics",[]);
+  const today=todayKey();
+  const existing=metrics.findIndex(m=>m.date===today);
+  const entry={date:today,weight:w||null,waist:ws||null,sleep:sl||null,mood:currentMoodVal||null,note:noteVal||null};
+  if(existing>=0)metrics[existing]=entry;else metrics.push(entry);
+  save("body-metrics",metrics);
+  updateHeader();renderBodyTab();showToast("Míry uloženy ✓");
+}
+
+function renderBodyTab(){
+  const metrics=load("body-metrics",[]);
+  const s=getSettings();
+  const lastWeight=lastWithField(metrics,"weight");
+  const lastWaist=lastWithField(metrics,"waist");
+  document.getElementById("cur-weight").textContent=(lastWeight||"—")+(lastWeight?" kg":"");
+  document.getElementById("cur-waist").textContent=(lastWaist||"—")+(lastWaist?" cm":"");
+  document.getElementById("goal-weight").textContent="Cíl: "+s.weightGoal+" kg";
+  document.getElementById("goal-waist").textContent="Cíl: "+s.waistGoal+" cm";
+
+  const startWeight=85,startWaist=104;
+  const curW=lastWeight||startWeight;
+  const curWs=lastWaist||startWaist;
+  const wPct=Math.max(0,Math.min(100,((startWeight-curW)/(startWeight-s.weightGoal))*100));
+  const wsPct=Math.max(0,Math.min(100,((startWaist-curWs)/(startWaist-s.waistGoal))*100));
+  document.getElementById("ms-weight-bar").style.width=wPct+"%";
+  document.getElementById("ms-waist-bar").style.width=wsPct+"%";
+  document.getElementById("ms-weight-lbl").textContent=`Váha — ${curW} kg`;
+  document.getElementById("ms-waist-lbl").textContent=`Pas — ${curWs} cm`;
+
+  const today=todayKey();
+  const todayMetric=metrics.find(m=>m.date===today)||{};
+  document.getElementById("inp-weight").value=todayMetric.weight||"";
+  document.getElementById("inp-waist").value=todayMetric.waist||"";
+  document.getElementById("inp-sleep").value=todayMetric.sleep||"";
+  document.getElementById("inp-note").value=todayMetric.note||"";
+  currentMoodVal=todayMetric.mood||0;
+  document.querySelectorAll(".mood-btn").forEach((b,i)=>b.classList.toggle("active",i+1===todayMetric.mood));
+
+  renderWeightChart(metrics,s);
+  renderWaistChart(metrics,s);
+  renderWeekScore();
+}
+
+function setChartRange(r){chartRange=r;const metrics=load("body-metrics",[]);renderWeightChart(metrics,getSettings());renderWaistChart(metrics,getSettings());}
+
+function renderWeightChart(metrics,s){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-chartRange);
+  const filtered=metrics.filter(m=>m.weight&&new Date(m.date)>=cutoff);
+  const labels=filtered.map(m=>new Date(m.date+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"}));
+  const data=filtered.map(m=>m.weight);
+  if(weightChart)weightChart.destroy();
+  const ctx=document.getElementById("weight-chart").getContext("2d");
+  if(!filtered.length){ctx.fillStyle="var(--muted)";ctx.font="13px system-ui";ctx.textAlign="center";ctx.fillText("Zatím žádná data",ctx.canvas.width/2,70);return;}
+  weightChart=new Chart(ctx,{type:"line",data:{labels,datasets:[{label:"Váha (kg)",data,borderColor:"#4FFFB0",backgroundColor:"rgba(79,255,176,0.1)",borderWidth:2,pointBackgroundColor:"#4FFFB0",pointRadius:4,tension:0.3},{label:"Cíl",data:Array(data.length).fill(s.weightGoal),borderColor:"#FF6B35",borderDash:[4,4],borderWidth:1,pointRadius:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:"#6B7280",font:{size:11}},grid:{color:"#1A2B3C"}},x:{ticks:{color:"#6B7280",font:{size:10},maxTicksLimit:6},grid:{color:"#1A2B3C"}}}}});
+}
+
+function renderWaistChart(metrics,s){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-chartRange);
+  const filtered=metrics.filter(m=>m.waist&&new Date(m.date)>=cutoff);
+  const labels=filtered.map(m=>new Date(m.date+"T12:00:00").toLocaleDateString("cs-CZ",{day:"numeric",month:"numeric"}));
+  const data=filtered.map(m=>m.waist);
+  if(waistChart)waistChart.destroy();
+  const ctx=document.getElementById("waist-chart").getContext("2d");
+  if(!filtered.length){ctx.fillStyle="var(--muted)";ctx.font="13px system-ui";ctx.textAlign="center";ctx.fillText("Zatím žádná data",ctx.canvas.width/2,70);return;}
+  waistChart=new Chart(ctx,{type:"line",data:{labels,datasets:[{label:"Pas (cm)",data,borderColor:"#60A5FA",backgroundColor:"rgba(96,165,250,0.1)",borderWidth:2,pointBackgroundColor:"#60A5FA",pointRadius:4,tension:0.3},{label:"Cíl",data:Array(data.length).fill(s.waistGoal),borderColor:"#FF6B35",borderDash:[4,4],borderWidth:1,pointRadius:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:"#6B7280",font:{size:11}},grid:{color:"#1A2B3C"}},x:{ticks:{color:"#6B7280",font:{size:10},maxTicksLimit:6},grid:{color:"#1A2B3C"}}}}});
+}
+
+// ═══ WEEKLY SCORE ═══
+function renderWeekScore(){
+  const s=getSettings();
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
+  const metrics=load("body-metrics",[]);
+  const supps=getSupps();
+  let dayScores=[];
+  days.forEach(d=>{
+    const cardio=load("cardio-"+d,{});
+    const workout=load("workout-"+d,{});
+    const suppChecked=load("supps-"+d,{});
+    const meals=load("meals-"+d,{});
+    const dk=getDayKey(d);const plan=PLAN[dk];
+    let parts=[];
+    const steps=parseInt(cardio.steps)||0,floors=parseInt(cardio.floors)||0;
+    parts.push(Math.min(1,(steps/s.stepsGoal+floors/s.floorsGoal)/2));
+    if(plan&&plan.exercises&&plan.exercises.length){
+      const done=plan.exercises.filter(e=>workout[e.id]).length;
+      parts.push(done/plan.exercises.length);
+    } else parts.push(steps||floors?1:0);
+    if(supps.length)parts.push(supps.filter(sp=>suppChecked[sp.id]).length/supps.length);
+    const hasMeals=Object.values(meals).some(v=>v&&v.items&&v.items.length);
+    parts.push(hasMeals?1:0);
+    const dayMetric=metrics.find(m=>m.date===d);
+    const hasAnyData=steps||floors||Object.values(workout).some(Boolean)||Object.values(suppChecked).some(Boolean)||hasMeals||(dayMetric&&(dayMetric.weight||dayMetric.waist));
+    if(hasAnyData)dayScores.push(parts.reduce((a,b)=>a+b,0)/parts.length);
+  });
+  const elVal=document.getElementById("week-score-val");
+  const elBar=document.getElementById("week-score-bar");
+  if(!dayScores.length){elVal.textContent="—";elBar.style.width="0%";return;}
+  const pct=Math.round((dayScores.reduce((a,b)=>a+b,0)/dayScores.length)*100);
+  elVal.textContent=pct+"%";
+  elBar.style.width=pct+"%";
+}
+
+// ═══ FOOD ═══
+function buildFoodDateNav(){
+  const cont=document.getElementById("food-date-nav");cont.innerHTML="";
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
   days.forEach(d=>{
     const isSelected=d===selectedDate;
-    const meals=load('meals-'+d,{});
-    const hasMeals=Object.values(meals).some(v=>v&&v.trim());
+    const meals=load("meals-"+d,{});
+    const hasMeals=Object.values(meals).some(v=>v&&v.items&&v.items.length);
     const isToday=d===todayKey();
-    const label=isToday?'Dnes':new Date(d+'T12:00:00').toLocaleDateString('cs-CZ',{weekday:'short',day:'numeric'});
-    const btn=document.createElement('button');
-    btn.className='date-btn'+(isSelected?' active':'');
-    btn.innerHTML=label+(hasMeals&&!isSelected?'<span class="date-dot"></span>':'');
-    btn.onclick=()=>{selectedDate=d;renderFood();};
+    const label=isToday?"Dnes":new Date(d+"T12:00:00").toLocaleDateString("cs-CZ",{weekday:"short",day:"numeric"});
+    const btn=document.createElement("button");btn.className="date-btn"+(isSelected?" active":"");
+    btn.innerHTML=label+(hasMeals&&!isSelected?'<span class="date-dot"></span>':"");
+    btn.onclick=()=>{selectedDate=d;renderFoodTab();};
     cont.appendChild(btn);
   });
 }
 
-function renderFood(){
-  buildDateNav();
-  const d=new Date(selectedDate+'T12:00:00');
-  document.getElementById('food-date-label').textContent=
-    d.toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
-  const meals=load('meals-'+selectedDate,{});
-  const cont=document.getElementById('meal-slots');
-  cont.innerHTML='';
-
+function renderFoodTab(){
+  buildFoodDateNav();
+  const d=new Date(selectedDate+"T12:00:00");
+  document.getElementById("food-date-lbl").textContent=d.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
+  const meals=load("meals-"+selectedDate,{});
+  const cont=document.getElementById("meal-slots-cont");cont.innerHTML="";
   MEAL_SLOTS.forEach(slot=>{
-    const card=document.createElement('div');
-    card.className='card';
-    card.innerHTML=`
-      <label class="meal-label" for="meal-${slot.id}">${slot.label}</label>
-      <textarea id="meal-${slot.id}" rows="${slot.rows}" placeholder="${slot.placeholder}">${meals[slot.id]||''}</textarea>`;
+    const slotData=meals[slot.id]||{items:[]};
+    const card=document.createElement("div");card.className="meal-card";
+    const photoHtml=slotData.photo
+      ?`<div style="margin-top:8px;position:relative;display:inline-block;"><img src="${slotData.photo}" style="max-width:120px;max-height:120px;border-radius:8px;display:block;"><button onclick="removeMealPhoto('${slot.id}')" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:13px;cursor:pointer;">×</button></div>`
+      :`<label class="meal-add" style="cursor:pointer;display:inline-block;margin-top:4px;">📷 Přidat fotku<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="addMealPhoto('${slot.id}',event)"></label>`;
+    card.innerHTML=`<span class="meal-label">${slot.label}</span><div id="items-${slot.id}"></div><span class="meal-add" onclick="addMealItem('${slot.id}')">+ Přidat položku</span><div>${photoHtml}</div>`;
     cont.appendChild(card);
-    document.getElementById('meal-'+slot.id).addEventListener('input',()=>saveMeals());
+    renderMealItems(slot.id,slotData.items||[]);
+  });
+  updateFoodKcalTotal(meals);
+  const macros=load("macros-"+selectedDate,{});
+  document.getElementById("inp-protein").value=macros.protein||"";
+  document.getElementById("inp-carbs").value=macros.carbs||"";
+  document.getElementById("inp-fat").value=macros.fat||"";
+}
+
+function saveMacros(){
+  save("macros-"+selectedDate,{
+    protein:document.getElementById("inp-protein").value,
+    carbs:document.getElementById("inp-carbs").value,
+    fat:document.getElementById("inp-fat").value
   });
 }
 
-function saveMeals(){
-  const meals={};
-  MEAL_SLOTS.forEach(s=>{
-    const el=document.getElementById('meal-'+s.id);
-    if(el)meals[s.id]=el.value;
+function updateFoodKcalTotal(meals){
+  let total=0,any=false;
+  Object.values(meals).forEach(slotData=>{
+    (slotData.items||[]).forEach(item=>{
+      if(item.kcal){total+=parseFloat(item.kcal)||0;any=true;}
+    });
   });
-  save('meals-'+selectedDate,meals);
+  document.getElementById("food-kcal-total").textContent="Celkem: "+(any?Math.round(total).toLocaleString("cs-CZ"):"—")+" kcal";
 }
 
-function copyDay(){
-  const meals=load('meals-'+selectedDate,{});
-  const d=new Date(selectedDate+'T12:00:00');
-  const dateStr=d.toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
-  const cardio=load('cardio-'+selectedDate,{});
-  let text=`📅 JÍDELNÍK — ${dateStr}\n${'─'.repeat(30)}\n`;
-  MEAL_SLOTS.forEach(s=>{
-    text+=`${s.label}:\n${meals[s.id]||'—'}\n\n`;
-  });
-  if(cardio.steps||cardio.floors){
-    text+=`\n🏃 Kroky: ${cardio.steps||0}  |  Patra: ${cardio.floors||0}`;
-  }
-  navigator.clipboard.writeText(text).then(()=>showToast('Den zkopírován!')).catch(()=>{
-    prompt('Zkopíruj ručně:',text);
+function addMealPhoto(slotId,event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const maxDim=640;
+      let w=img.width,h=img.height;
+      if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+      else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+      const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL("image/jpeg",0.6);
+      const d=getMealData();
+      if(!d[slotId])d[slotId]={items:[]};
+      d[slotId].photo=dataUrl;
+      const ok=saveMealData(d);
+      renderFoodTab();
+      if(ok)showToast("Fotka přidána ✓");
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeMealPhoto(slotId){
+  const d=getMealData();
+  if(d[slotId])delete d[slotId].photo;
+  saveMealData(d);renderFoodTab();
+}
+
+function renderMealItems(slotId,items){
+  const cont=document.getElementById("items-"+slotId);
+  cont.innerHTML="";
+  items.forEach((item,i)=>{
+    const row=document.createElement("div");row.className="meal-item";
+    row.innerHTML=`<input type="text" value="${item.name||""}" placeholder="Co jsi jedl..." onchange="updateMealItem('${slotId}',${i},'name',this.value)"><input type="number" value="${item.qty||""}" placeholder="—" step="any" onchange="updateMealItem('${slotId}',${i},'qty',this.value)"><select onchange="updateMealItem('${slotId}',${i},'unit',this.value)"><option${item.unit==="g"?" selected":""}>g</option><option${item.unit==="ml"?" selected":""}>ml</option><option${item.unit==="ks"?" selected":""}>ks</option><option${item.unit==="porce"?" selected":""}>porce</option></select><input type="number" class="kcal" value="${item.kcal||""}" placeholder="kcal" step="any" style="color:var(--orange);" onchange="updateMealItem('${slotId}',${i},'kcal',this.value)"><button class="meal-del" onclick="removeMealItem('${slotId}',${i})">×</button>`;
+    cont.appendChild(row);
   });
 }
 
-function copyWeek(){
-  const lines=['📊 TÝDENNÍ SHRNUTÍ PRO REVIZI','='.repeat(35),''];
-  const days=[];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
+function getMealData(){return load("meals-"+selectedDate,{});}
+function saveMealData(d){return save("meals-"+selectedDate,d);}
 
+function addMealItem(slotId){
+  const d=getMealData();
+  if(!d[slotId])d[slotId]={items:[]};
+  d[slotId].items.push({name:"",qty:"",unit:"g"});
+  saveMealData(d);renderMealItems(slotId,d[slotId].items);
+}
+
+function updateMealItem(slotId,i,field,val){
+  const d=getMealData();
+  if(!d[slotId])d[slotId]={items:[]};
+  d[slotId].items[i][field]=val;
+  saveMealData(d);
+  updateFoodKcalTotal(d);
+}
+
+function removeMealItem(slotId,i){
+  const d=getMealData();
+  d[slotId].items.splice(i,1);
+  saveMealData(d);renderMealItems(slotId,d[slotId].items);
+}
+
+// ═══ SEND TO CLAUDE ═══
+function sendToClaudeWeek(){
+  const lines=["📊 TÝDENNÍ SHRNUTÍ PRO REVIZI","=".repeat(35),""];
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
   days.forEach(d=>{
-    const meals=load('meals-'+d,{});
-    const cardio=load('cardio-'+d,{});
-    const workout=load('workout-'+d,{});
-    const hasMeals=Object.values(meals).some(v=>v&&v.trim());
-    if(!hasMeals&&!cardio.steps&&!cardio.floors) return;
-    const dk=getDayKey(d);
-    const plan=PLAN[dk];
-    const dd=new Date(d+'T12:00:00');
-    lines.push(`📅 ${dd.toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'})}`);
-    if(cardio.steps||cardio.floors){
-      lines.push(`  🏃 Kroky: ${cardio.steps||0}  |  Patra: ${cardio.floors||0}`);
+    const meals=load("meals-"+d,{});
+    const cardio=load("cardio-"+d,{});
+    const workout=load("workout-"+d,{});
+    const sports=load("sports-"+d,[]);
+    const extras=load("extra-ex-"+d,[]);
+    const metrics=load("body-metrics",[]).find(m=>m.date===d);
+    const hasMeals=Object.values(meals).some(v=>v&&v.items&&v.items.length);
+    const dayMacros=load("macros-"+d,{});
+    const hasMacros=dayMacros.protein||dayMacros.carbs||dayMacros.fat;
+    if(!hasMeals&&!cardio.steps&&!cardio.floors&&!metrics&&!hasMacros)return;
+    const dk=getDayKey(d);const plan=PLAN[dk];
+    const dd=new Date(d+"T12:00:00");
+    lines.push(`📅 ${dd.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"})}`);
+    if(metrics){
+      if(metrics.weight)lines.push(`  ⚖️ Váha: ${metrics.weight} kg`);
+      if(metrics.waist)lines.push(`  📏 Pas: ${metrics.waist} cm`);
+      if(metrics.sleep)lines.push(`  😴 Spánek: ${metrics.sleep} h`);
+      if(metrics.mood)lines.push(`  ⚡ Energie: ${"⭐".repeat(metrics.mood)}`);
+      if(metrics.note)lines.push(`  📝 Poznámka: ${metrics.note}`);
     }
-    if(plan&&plan.exercises){
-      const done=plan.exercises.filter(e=>workout[e.id]).length;
-      lines.push(`  💪 Cviky: ${done}/${plan.exercises.length} splněno`);
-    }
-    MEAL_SLOTS.forEach(s=>{
-      if(meals[s.id]&&meals[s.id].trim()){
-        lines.push(`  ${s.label}: ${meals[s.id].replace(/\n/g,' ')}`);
+    if(cardio.steps||cardio.floors)lines.push(`  🏃 Kroky: ${cardio.steps||0}  |  Patra: ${cardio.floors||0}`);
+    if(plan&&plan.exercises){const done=plan.exercises.filter(e=>workout[e.id]).length;lines.push(`  💪 Cviky: ${done}/${plan.exercises.length} splněno`);}
+    if(extras.length)lines.push(`  ➕ Navíc: ${extras.map(e=>`${e.name} ${e.sets}×${e.reps}`).join(", ")}`);
+    if(sports.length)lines.push(`  🏅 Sporty: ${sports.map(s=>`${s.name}${s.time?" "+s.time+"min":""}`).join(", ")}`);
+    let dayKcal=0;
+    MEAL_SLOTS.forEach(slot=>{
+      const slotData=meals[slot.id];
+      if(slotData&&slotData.items&&slotData.items.length){
+        const items=slotData.items.filter(i=>i.name).map(i=>`${i.name}${i.qty?" "+i.qty+i.unit:""}${i.kcal?" ("+i.kcal+" kcal)":""}`).join(", ");
+        slotData.items.forEach(i=>{if(i.kcal)dayKcal+=parseFloat(i.kcal)||0;});
+        if(items)lines.push(`  ${slot.label}: ${items}`);
       }
     });
-    lines.push('');
+    if(dayKcal>0)lines.push(`  🔥 Celkem kcal: ${Math.round(dayKcal)}`);
+    const macros=load("macros-"+d,{});
+    if(macros.protein||macros.carbs||macros.fat)lines.push(`  🥩 Makra: B ${macros.protein||0}g · S ${macros.carbs||0}g · T ${macros.fat||0}g`);
+    lines.push("");
   });
-
-  const text=lines.join('\n');
-  navigator.clipboard.writeText(text).then(()=>showToast('Týden zkopírován!')).catch(()=>{
-    prompt('Zkopíruj ručně:',text);
-  });
+  const text=lines.join("\n");
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast("Zkopírováno!");
+    setTimeout(()=>window.open("https://claude.ai","_blank"),800);
+  }).catch(()=>{prompt("Zkopíruj ručně:",text);});
 }
 
-// ─── INIT ──────────────────────────────────────────────────────────────────
+// ═══ BACKUP ═══
+function exportData(){
+  const allData={};
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);allData[k]=load(k,null);}
+  const blob=new Blob([JSON.stringify(allData,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");
+  a.href=url;a.download=`fitness-backup-${todayKey()}.json`;a.click();
+  URL.revokeObjectURL(url);showToast("Záloha stažena ✓");
+}
 
+function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      Object.entries(data).forEach(([k,v])=>save(k,v));
+      showToast("Data importována ✓");
+      setTimeout(()=>location.reload(),1000);
+    }catch{showToast("Chyba při importu!");}
+  };
+  reader.readAsText(file);
+}
+
+function confirmClearData(){
+  if(confirm("Opravdu smazat VŠECHNA data? Tato akce je nevratná.")){
+    localStorage.clear();showToast("Data smazána");setTimeout(()=>location.reload(),1000);
+  }
+}
+
+// ═══ INIT ═══
+updateHeader();
 renderWorkout();
-renderFood();
+renderSupps();
 </script>
 </body>
 </html>
