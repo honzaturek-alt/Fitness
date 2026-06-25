@@ -199,8 +199,7 @@ select option{background:#1A1F2E;color:var(--text);}
 
   <div id="sports-today-cont"></div>
 
-  <button class="btn btn-outline-green" style="width:100%;margin-bottom:8px;" onclick="openAddExModal()">+ Přidat cvik navíc</button>
-  <button class="btn btn-outline" style="width:100%;" onclick="openAddSportModal()">+ Přidat sport / aktivitu</button>
+  <div id="extra-actions-cont"></div>
 </div>
 
 <!-- ═══ DOPLŇKY ═══ -->
@@ -1098,11 +1097,12 @@ function renderWorkout(){
   buildDayBtns();
   const plan=PLAN[activeDay];
   const today=todayKey();
-  document.getElementById("day-type-lbl").textContent=plan.type;
+  const isToday=activeDay===todayDayKey;
+  document.getElementById("day-type-lbl").textContent=plan.type+(isToday?"":" (náhled)");
   document.getElementById("today-lbl").textContent=new Date().toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
   const checked=load("workout-"+today,{});
   const exs=plan.exercises||[];
-  const done=exs.filter(e=>checked[e.id]).length;
+  const done=isToday?exs.filter(e=>checked[e.id]).length:0;
   const total=exs.length;
   const circ=2*Math.PI*28;
   const pct=total>0?done/total:0;
@@ -1111,21 +1111,33 @@ function renderWorkout(){
   const cardio=load("cardio-"+today,{steps:"",floors:""});
   document.getElementById("inp-steps").value=cardio.steps||"";
   document.getElementById("inp-floors").value=cardio.floors||"";
+  document.getElementById("inp-steps").disabled=!isToday;
+  document.getElementById("inp-floors").disabled=!isToday;
   updateBars();
   const cont=document.getElementById("exercises-cont");cont.innerHTML="";
   if(plan.cardioOnly){
     cont.innerHTML=`<div class="card accent-green"><div class="label">Aktivní den</div><p style="color:var(--text);margin-top:8px;font-size:14px;line-height:1.6;">${plan.cardioNote}</p></div>`;
   } else {
+    if(!isToday)cont.innerHTML=`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">👁️ Náhled plánu — zaškrtávat lze jen u dnešního dne</div>`;
     exs.forEach(ex=>{
-      const isDone=!!checked[ex.id];
+      const isDone=isToday&&!!checked[ex.id];
       const d=document.createElement("div");
       d.className="ex-card"+(isDone?" done":"");d.id="exc-"+ex.id;
-      d.innerHTML=`<div class="ex-row"><button class="checkbox${isDone?" checked":""}" onclick="toggleEx('${ex.id}')" id="chk-${ex.id}">${isDone?"✓":""}</button><div style="flex:1;"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;"><span class="ex-name${isDone?" done":""}" id="exn-${ex.id}">${ex.name}</span><span class="ex-en">${ex.en}</span><a href="${ex.url}" target="_blank" class="ex-link">▶</a></div><div class="ex-sets">${ex.sets}</div><div class="ex-note">💡 ${ex.note}</div></div></div>`;
+      const chk=isToday?`<button class="checkbox${isDone?" checked":""}" onclick="toggleEx('${ex.id}')" id="chk-${ex.id}">${isDone?"✓":""}</button>`:`<span class="checkbox" style="opacity:.4;cursor:default;"></span>`;
+      d.innerHTML=`<div class="ex-row">${chk}<div style="flex:1;"><div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;"><span class="ex-name${isDone?" done":""}" id="exn-${ex.id}">${ex.name}</span><span class="ex-en">${ex.en}</span><a href="${ex.url}" target="_blank" class="ex-link">▶</a></div><div class="ex-sets">${ex.sets}</div><div class="ex-note">💡 ${ex.note}</div></div></div>`;
       cont.appendChild(d);
     });
   }
-  renderExtraEx();
-  renderSportsToday();
+  const extraCont=document.getElementById("extra-actions-cont");
+  if(isToday){
+    renderExtraEx();
+    renderSportsToday();
+    extraCont.innerHTML=`<button class="btn btn-outline-green" style="width:100%;margin-bottom:8px;" onclick="openAddExModal()">+ Přidat cvik navíc</button><button class="btn btn-outline" style="width:100%;" onclick="openAddSportModal()">+ Přidat sport / aktivitu</button>`;
+  } else {
+    document.getElementById("sports-today-cont").innerHTML="";
+    const existing=document.getElementById("extra-ex-sect");if(existing)existing.remove();
+    extraCont.innerHTML=`<div class="card" style="text-align:center;"><p style="font-size:12px;color:var(--muted);line-height:1.6;">Cvik navíc nebo sport lze přidat jen pro <strong>dnešní den</strong>.<br>Pro trvalou úpravu plánu tohoto dne použij <strong>Nastavení → Upravit plán cvičení</strong>.</p></div>`;
+  }
 }
 
 function toggleEx(id){
