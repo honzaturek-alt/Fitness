@@ -148,7 +148,7 @@ select option{background:#1A1F2E;color:var(--text);}
   <div class="header-eyebrow">FITNESS TRACKER V2</div>
   <div class="header-title">Tvůj plán 💪</div>
   <div class="header-meta">
-    <div class="header-stat">Fáze <span id="hdr-phase">1</span></div>
+    <div class="header-stat">Šablona <span id="hdr-template">—</span></div>
     <div class="header-stat">Váha <span id="hdr-weight">—</span> kg</div>
     <div class="header-stat">Pas <span id="hdr-waist">—</span> cm</div>
   </div>
@@ -159,6 +159,7 @@ select option{background:#1A1F2E;color:var(--text);}
   <button class="nav-btn" onclick="switchTab('supps')"><span class="nav-icon">💊</span>Doplňky</button>
   <button class="nav-btn" onclick="switchTab('body')"><span class="nav-icon">📊</span>Míry</button>
   <button class="nav-btn" onclick="switchTab('food')"><span class="nav-icon">🍽️</span>Jídelník</button>
+  <button class="nav-btn" onclick="switchTab('rehab')"><span class="nav-icon">🦵</span>Rehab</button>
   <button class="nav-btn" onclick="switchTab('settings')"><span class="nav-icon">⚙️</span>Nastavení</button>
 </div>
 
@@ -230,12 +231,16 @@ select option{background:#1A1F2E;color:var(--text);}
   <div class="card">
     <div class="label">Zadat dnešní míry</div>
     <div style="display:flex;gap:10px;margin-top:10px;">
-      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">⚖️ Váha (kg)</label><input type="number" id="inp-weight" placeholder="85.0" step="0.1"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">⚖️ Váha (kg)</label><input type="number" id="inp-weight" placeholder="83.0" step="0.1"></div>
       <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">📏 Pas (cm)</label><input type="number" id="inp-waist" placeholder="104" step="0.5"></div>
     </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">😴 Spánek (h)</label><input type="number" id="inp-sleep" placeholder="7.5" step="0.5"></div>
+      <div style="flex:1;"><label style="font-size:11px;color:var(--muted);">🤏 Kožní řasa (mm)</label><input type="number" id="inp-skinfold" placeholder="—" step="0.5"></div>
+    </div>
     <div style="margin-top:10px;">
-      <label style="font-size:11px;color:var(--muted);">😴 Spánek (hodiny)</label>
-      <input type="number" id="inp-sleep" placeholder="7.5" step="0.5">
+      <label style="font-size:11px;color:var(--muted);">Místo měření kožní řasy</label>
+      <input type="text" id="inp-skinfold-site" placeholder="např. břicho, podlopatka">
     </div>
     <div style="margin-top:10px;">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">⚡ Energie / nálada</div>
@@ -318,6 +323,14 @@ select option{background:#1A1F2E;color:var(--text);}
     <div style="margin-top:10px;font-size:13px;color:var(--orange);font-weight:700;" id="food-kcal-total">Celkem: — kcal</div>
   </div>
 
+  <div class="card accent-purple">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="label">📋 Doporučený plán</div>
+      <button class="btn btn-outline" style="padding:5px 10px;font-size:11px;" onclick="openModal('modal-shopping')">🛒 Nákupní seznam</button>
+    </div>
+    <div id="meal-plan-cont"></div>
+  </div>
+
   <div class="card">
     <div class="label" style="margin-bottom:10px;">Denní makra (odhad)</div>
     <div style="display:flex;gap:8px;">
@@ -328,6 +341,38 @@ select option{background:#1A1F2E;color:var(--text);}
   </div>
 
   <div id="meal-slots-cont"></div>
+</div>
+
+<!-- ═══ REHAB ═══ -->
+<div id="tab-rehab" class="tab">
+  <div class="card accent-blue">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div class="label">Rehabilitace kolena</div>
+        <div style="font-size:15px;font-weight:700;margin-top:3px;" id="rehab-week-lbl">Týden 1</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="btn btn-outline" style="padding:6px 12px;" onclick="adjustRehabWeek(-1)">−</button>
+        <button class="btn btn-outline" style="padding:6px 12px;" onclick="adjustRehabWeek(1)">+</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="rehab-recommend-lbl"></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:8px;">🦵 Bolest kolena dnes</div>
+    <div class="mood-row" id="knee-pain-row">
+      <button class="mood-btn" onclick="setKneePain(0)">0</button>
+      <button class="mood-btn" onclick="setKneePain(1)">1</button>
+      <button class="mood-btn" onclick="setKneePain(2)">2</button>
+      <button class="mood-btn" onclick="setKneePain(3)">3</button>
+      <button class="mood-btn" onclick="setKneePain(4)">4</button>
+      <button class="mood-btn" onclick="setKneePain(5)">5</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;">0 = žádná bolest, 5 = silná bolest</div>
+  </div>
+
+  <div id="rehab-blocks-cont"></div>
 </div>
 
 <!-- ═══ NASTAVENÍ ═══ -->
@@ -344,23 +389,22 @@ select option{background:#1A1F2E;color:var(--text);}
       <button class="btn btn-outline-green" style="width:100%;" onclick="enableNotifications()">🔔 Povolit notifikace</button>
       <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Funguje jen pokud je appka otevřená na pozadí v Safari (iOS omezuje notifikace na pozadí). Pro spolehlivé připomínky použij iOS Zkratky + automatizaci "Časový plán".</div>
     </div>
-    <div class="form-group"><label>Fáze tréninku</label>
-      <select id="set-phase">
-        <option value="1">Fáze 1 — Červen/Červenec (vlastní váha + gumy)</option>
-        <option value="2">Fáze 2 — Srpen (+ badminton)</option>
-        <option value="3">Fáze 3 — Září/Říjen (+ TRX)</option>
-      </select>
-    </div>
     <button class="btn btn-green" style="width:100%;" onclick="saveSettings()">Uložit nastavení</button>
   </div>
 
+  <div class="card accent-purple">
+    <div class="label" style="margin-bottom:10px;">Šablony tréninku</div>
+    <div id="template-list"></div>
+    <button class="btn btn-outline-green" style="width:100%;margin-top:8px;" onclick="addTemplate()">+ Nová šablona</button>
+  </div>
+
   <div class="card accent-blue">
-    <div class="label" style="margin-bottom:10px;">Upravit plán cvičení</div>
+    <div class="label" style="margin-bottom:10px;">Upravit plán cvičení (aktivní šablona)</div>
     <div class="day-row" id="plan-edit-days"></div>
     <div id="plan-edit-cont"></div>
     <button class="btn btn-outline-green" style="width:100%;margin-top:8px;" onclick="addPlanExercise()">+ Přidat cvik do dne</button>
     <button class="btn btn-green" style="width:100%;margin-top:8px;" onclick="savePlanEdits()">Uložit plán</button>
-    <button class="btn btn-red" style="width:100%;margin-top:8px;" onclick="resetPlanToDefault()">Obnovit výchozí plán</button>
+    <button class="btn btn-red" style="width:100%;margin-top:8px;" onclick="resetTemplatesToDefault()">Obnovit výchozí šablony</button>
   </div>
 
   <div class="card">
@@ -460,6 +504,17 @@ select option{background:#1A1F2E;color:var(--text);}
   </div>
 </div>
 
+<!-- MODAL: Nákupní seznam -->
+<div class="modal-backdrop" id="modal-shopping">
+  <div class="modal" style="max-height:80vh;overflow-y:auto;">
+    <h3>🛒 Nákupní seznam — týdenní zásoba</h3>
+    <div id="shopping-list-cont"></div>
+    <div class="modal-footer">
+      <button class="btn btn-green" style="width:100%;" onclick="closeModal('modal-shopping')">Zavřít</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -498,11 +553,6 @@ const PLAN = {
   Ne:{label:"Neděle",type:"😴 Odpočinek",intensity:"easy",cardioOnly:true,cardioNote:"Aktivní odpočinek. Příprava na nový týden. Nezapomeň na týdenní revizi!"},
 };
 const DAY_ORDER=["Po","Ut","St","Ct","Pa","So","Ne"];
-
-(function applyPlanOverrides(){
-  const saved=load("plan-data",null);
-  if(saved)DAY_ORDER.forEach(k=>{if(saved[k])PLAN[k]=saved[k];});
-})();
 
 const EX_LIBRARY=[
   {name:"Dřep u zdi / Wall Squat",url:"https://www.youtube.com/watch?v=y-wV4Venusw",cat:"Vlastní váha"},
@@ -555,6 +605,295 @@ const MEAL_SLOTS=[
   {id:"pochutiny",label:"🍺 Pochutiny / navíc"},
 ];
 
+const MEAL_PLAN={
+  Po:{label:"💪 Tréninkový den",kcalTarget:"1 650 kcal",carbsTarget:"130 g sacharidů",proteinOfDay:"Kuřecí stehna",proteinNote:"Trouba 200° / 35 min, česnek + paprika",meals:[
+    {slot:"obed",name:"Kuřecí stehna + rýže/batát + zelenina",kcal:650,note:"200–250 g masa, 80 g rýže/batát (suchá váha), zelenina libovolně, vývar jako omáčka"},
+    {slot:"svacina1",name:"Tvaroh 4 % + vejce",kcal:380,note:"250 g tučného tvarohu + 2 vejce na měkko/volské oko"},
+    {slot:"vecere",name:"Maso/ryba + zelenina + malá příloha",kcal:420,note:"180–200 g masa nebo ryby, zelenina, 1 lžíce olivového oleje, malá příloha OK"},
+  ]},
+  Ut:{label:"🚶 Aktivní den",kcalTarget:"1 400–1 500 kcal",carbsTarget:"60 g sacharidů",proteinOfDay:"Vejce + tvaroh",proteinNote:"5 min příprava, svačina i večeře",meals:[
+    {slot:"obed",name:"Česká klasika (půlka přílohy) nebo maso + zelenina",kcal:500,note:"polévka + hlavní, příloha půlka nebo bez; nebo 200 g masa + zelenina bez přílohy"},
+    {slot:"svacina1",name:"Tvaroh + vejce",kcal:430,note:"300 g tvarohu + 2–3 vejce"},
+    {slot:"vecere",name:"Tuňák + vejce + zelenina (bez příloh)",kcal:380,note:"2 plechovky tuňáka + 2 vejce + zelenina, BEZ rýže a brambor"},
+  ]},
+  St:{label:"💪 Tréninkový den",kcalTarget:"1 650 kcal",carbsTarget:"130 g sacharidů",proteinOfDay:"Vepřová panenka",proteinNote:"Pánev 4+4 min, pomalý oheň",meals:[
+    {slot:"obed",name:"Vepřová panenka + rýže/batát + zelenina",kcal:650,note:"200–250 g masa, 80 g rýže/batát, zelenina, vývar jako omáčka"},
+    {slot:"svacina1",name:"Tvaroh 4 % + vejce",kcal:380,note:"250 g tučného tvarohu + 2 vejce"},
+    {slot:"vecere",name:"Maso/ryba + zelenina + malá příloha",kcal:420,note:"180–200 g masa nebo ryby, zelenina, 1 lžíce olivového oleje"},
+  ]},
+  Ct:{label:"🚶 Aktivní den",kcalTarget:"1 400–1 500 kcal",carbsTarget:"60 g sacharidů",proteinOfDay:"Tuňák z konzervy",proteinNote:"Studená večeře, zelenina",meals:[
+    {slot:"obed",name:"Česká klasika (půlka přílohy) nebo maso + zelenina",kcal:500,note:"polévka + hlavní, příloha půlka nebo bez"},
+    {slot:"svacina1",name:"Tvaroh + vejce",kcal:430,note:"300 g tvarohu + 2–3 vejce"},
+    {slot:"vecere",name:"Tuňák + vejce + zelenina (bez příloh)",kcal:380,note:"2 plechovky tuňáka + 2 vejce + zelenina, BEZ rýže a brambor"},
+  ]},
+  Pa:{label:"💪 Tréninkový den",kcalTarget:"1 650 kcal",carbsTarget:"130 g sacharidů",proteinOfDay:"Hovězí mleté",proteinNote:"Wok se zeleninou, 15 min",meals:[
+    {slot:"obed",name:"Hovězí mleté + rýže/batát + zelenina",kcal:650,note:"200–250 g masa, 80 g rýže/batát, zelenina, vývar jako omáčka"},
+    {slot:"svacina1",name:"Tvaroh 4 % + vejce",kcal:380,note:"250 g tučného tvarohu + 2 vejce"},
+    {slot:"vecere",name:"Maso/ryba + zelenina + malá příloha",kcal:420,note:"180–200 g masa nebo ryby, zelenina, 1 lžíce olivového oleje"},
+  ]},
+  So:{label:"🌊 Volný den",kcalTarget:"1 600–1 800 kcal",carbsTarget:"volné",proteinOfDay:"Pstruh nebo jehněčí",proteinNote:"Trouba/pánev, víkendová klasika",meals:[
+    {slot:"obed",name:"Cokoliv, normální porce",kcal:null,note:"Víkend je volnější"},
+    {slot:"vecere",name:"Pstruh / jehněčí / kachna / vejce",kcal:null,note:"1–2 piva nebo sklenka vína OK, dezert max 1× za víkend"},
+  ]},
+  Ne:{label:"😴 Odpočinek",kcalTarget:"1 600 kcal",carbsTarget:"60 g sacharidů",proteinOfDay:"Kachna / vejce / volné",proteinNote:"",meals:[
+    {slot:"obed",name:"Česká klasika (půlka přílohy) nebo maso + zelenina",kcal:500,note:"polévka + hlavní, příloha půlka nebo bez"},
+    {slot:"svacina1",name:"Tvaroh + vejce",kcal:430,note:"300 g tvarohu + 2–3 vejce"},
+    {slot:"vecere",name:"Kachna/vejce + zelenina (bez příloh)",kcal:380,note:"BEZ rýže a brambor — příprava na nový týden"},
+  ]},
+};
+
+const SHOPPING_LIST=[
+  {cat:"🥩 Bílkoviny",items:[
+    {name:"Kuřecí stehna",qty:"500–600 g",note:"2–3× týdně"},
+    {name:"Vepřová panenka",qty:"400 g",note:"1× týdně"},
+    {name:"Hovězí mleté / zadní",qty:"400 g",note:"1× týdně"},
+    {name:"Tuňák ve vodě (konzerva)",qty:"4–6 ks",note:"Záchrana vždy doma"},
+    {name:"Vejce",qty:"12–15 ks",note:"Každý den"},
+    {name:"Tvaroh tučný 4 %",qty:"2× 500 g",note:"Svačiny"},
+    {name:"Pstruh / jehněčí",qty:"400 g",note:"Víkend"},
+  ]},
+  {cat:"🌾 Přílohy",items:[
+    {name:"Rýže basmati",qty:"500 g",note:"Tréninkové dny"},
+    {name:"Batát",qty:"3–4 ks",note:"Tréninkové dny"},
+    {name:"Brambory",qty:"1 kg",note:"Obědy / občas"},
+    {name:"Celozrnný chléb",qty:"1 bochník",note:"Svačiny"},
+    {name:"Čočka",qty:"250 g",note:"1× týdně"},
+  ]},
+  {cat:"🥦 Zelenina",items:[
+    {name:"Brokolice mražená",qty:"1 kg",note:"Vždy doma"},
+    {name:"Špenát mražený",qty:"500 g",note:"Vždy doma"},
+    {name:"Paprika",qty:"3–4 ks",note:"Čerstvá"},
+    {name:"Cuketa",qty:"2 ks",note:"Čerstvá"},
+    {name:"Cibule",qty:"1 kg",note:"Základ"},
+    {name:"Česnek",qty:"1 hlávka",note:"Základ"},
+    {name:"Rajčata / passata",qty:"2× 500 ml",note:"Omáčky"},
+  ]},
+  {cat:"🫙 Dochucení & tuky",items:[
+    {name:"Olivový olej",qty:"",note:"Hlavní tuk"},
+    {name:"Máslo",qty:"",note:"Na dochucení"},
+    {name:"Sójová omáčka",qty:"",note:"Wok / marinády"},
+    {name:"Hořčice",qty:"",note:""},
+    {name:"Koření (paprika, kmín, rozmarýn, tymián)",qty:"",note:""},
+    {name:"Vývar (domácí nebo kostka)",qty:"",note:"Základ omáček"},
+  ]},
+];
+
+const MEAL_PLAN_TIPS=[
+  "Večer bez škrobu v netréninkové dny (Út, Čt) — rýže a brambory jen Po/St/Pá",
+  "Tvaroh nebo vejce každý den — nejrychlejší cesta k 150 g bílkovin",
+  "Vývar jako základ omáčky — nulové kalorie, minerály, kolagen pro koleno",
+  "Oběd v restauraci: polévku nevynechat, přílohu zredukovat na půlku",
+  "Pochutiny jen v sobotu — jeden volný večer týdně drží plán psychologicky",
+  "Jíst 12:00–20:00 — přirozený IF, neměnit",
+];
+
+const REHAB_BLOCKS=[
+  {id:"activation",label:"Blok 1 — Aktivace (denně)",alwaysOn:true,exercises:[
+    {id:"ankle_circles",name:"Kroužení kotníkem",sets:"1× 10 každý směr",url:"https://www.youtube.com/results?search_query=ankle+circles+exercise"},
+    {id:"quad_set",name:"Quad set (stah čtyřhlavého)",sets:"3× 10 / 10 sec",url:"https://www.youtube.com/results?search_query=quad+set+exercise+knee"},
+    {id:"slr",name:"Zvedání natažené nohy (SLR)",sets:"3× 15+15",url:"https://www.youtube.com/results?search_query=straight+leg+raise+exercise"},
+    {id:"clamshell",name:"Clamshell (únos na boku)",sets:"3× 15+15",url:"https://www.youtube.com/results?search_query=clamshell+exercise"},
+  ]},
+  {id:"strength",label:"Blok 2 — Posilování (od týdne 3)",minWeek:3,exercises:[
+    {id:"mini_squat",name:"Mini dřep 0–45°",sets:"3× 15",url:"https://www.youtube.com/results?search_query=mini+squat+0-45+knee+rehab"},
+    {id:"step_up_low",name:"Výstup na nízký schod (10 cm)",sets:"3× 15+15",url:"https://www.youtube.com/results?search_query=low+step+up+exercise"},
+    {id:"monster_walk",name:"Monster walk s gumou",sets:"3× 10+10 kroků",url:"https://www.youtube.com/results?search_query=monster+walk+band+exercise"},
+    {id:"single_leg_stand",name:"Stoj na jedné noze",sets:"3× 30+30 sec",url:"https://www.youtube.com/results?search_query=single+leg+balance+exercise"},
+  ]},
+  {id:"stretch",label:"Blok 3 — Protažení (denně)",alwaysOn:true,exercises:[
+    {id:"quad_stretch",name:"Quadriceps stretch",sets:"30+30 sec",url:"https://www.youtube.com/results?search_query=quadriceps+stretch"},
+    {id:"hamstring_stretch",name:"Hamstring stretch",sets:"30+30 sec",url:"https://www.youtube.com/results?search_query=hamstring+stretch"},
+    {id:"calf_stretch",name:"Lýtko u zdi",sets:"30+30 sec",url:"https://www.youtube.com/results?search_query=calf+stretch+wall"},
+  ]},
+];
+
+// ═══ TRAINING TEMPLATES ═══
+function buildDefaultTemplates(){
+  const baseDays=JSON.parse(JSON.stringify(PLAN));
+  const bandsDays=JSON.parse(JSON.stringify(PLAN));
+  const bandLib=EX_LIBRARY.filter(e=>e.cat==="Gumy");
+  ["Po","St","Pa"].forEach(k=>{
+    if(bandsDays[k].exercises){
+      bandsDays[k].exercises=bandsDays[k].exercises.map((ex,i)=>({...ex,name:ex.name+" (s gumou)",note:(ex.note?ex.note+" — ":"")+"použij odporovou gumu",url:bandLib[i%bandLib.length].url}));
+    }
+  });
+  const badmintonDays=JSON.parse(JSON.stringify(PLAN));
+  badmintonDays.Ut={label:"Úterý",type:"🏸 Badminton",intensity:"medium",cardioOnly:true,cardioNote:"Badminton 60–90 min. Zaznamenej jako sport v záložce Trénink."};
+  badmintonDays.So={label:"Sobota",type:"🌊 Volný den",intensity:"easy",cardioOnly:true,cardioNote:"Volný pohyb. Zaznamenej kroky a patra."};
+  const trxDays=JSON.parse(JSON.stringify(PLAN));
+  const trxLib=EX_LIBRARY.filter(e=>e.cat==="TRX");
+  let trxI=0;
+  ["Po","St","Pa"].forEach(k=>{
+    if(trxDays[k].exercises){
+      trxDays[k].exercises=trxDays[k].exercises.map(ex=>{const t=trxLib[trxI++%trxLib.length];return {...ex,name:ex.name+" → "+t.name,note:(ex.note?ex.note+" — ":"")+"TRX varianta",url:t.url};});
+    }
+  });
+  const emptyDays={};
+  DAY_ORDER.forEach(k=>{emptyDays[k]={label:PLAN[k].label,type:"📝 Vlastní",intensity:"medium",cardioOnly:true,cardioNote:"Prázdný den — uprav v Nastavení → Upravit plán cvičení."};});
+  return [
+    {id:"tpl_a",name:"Začátečník — vlastní váha",days:baseDays},
+    {id:"tpl_b",name:"S gumami — střední",days:bandsDays},
+    {id:"tpl_c",name:"Badminton sezóna",days:badmintonDays},
+    {id:"tpl_d",name:"TRX — pokročilý",days:trxDays},
+    {id:"tpl_e",name:"Vlastní",days:emptyDays},
+  ];
+}
+
+function getTemplates(){
+  let tpls=load("templates",null);
+  if(!tpls){
+    tpls=buildDefaultTemplates();
+    const legacy=load("plan-data",null);
+    if(legacy){
+      DAY_ORDER.forEach(k=>{if(legacy[k])tpls[0].days[k]=legacy[k];});
+      localStorage.removeItem("plan-data");
+    }
+    save("templates",tpls);
+  }
+  return tpls;
+}
+function saveTemplates(tpls){save("templates",tpls);}
+function getActiveTemplateId(){
+  const s=getSettings();
+  const tpls=getTemplates();
+  return (s.templateId&&tpls.some(t=>t.id===s.templateId))?s.templateId:tpls[0].id;
+}
+function getActiveTemplate(){
+  const tpls=getTemplates();
+  return tpls.find(t=>t.id===getActiveTemplateId())||tpls[0];
+}
+function applyActiveTemplate(){
+  const tpl=getActiveTemplate();
+  DAY_ORDER.forEach(k=>{if(tpl.days[k])PLAN[k]=tpl.days[k];});
+}
+function setActiveTemplate(id){
+  const s=getSettings();
+  s.templateId=id;
+  save("settings",s);
+  applyActiveTemplate();
+}
+
+function renderTemplateList(){
+  const cont=document.getElementById("template-list");
+  if(!cont)return;
+  const tpls=getTemplates();
+  const activeId=getActiveTemplateId();
+  cont.innerHTML="";
+  tpls.forEach(t=>{
+    const isActive=t.id===activeId;
+    const row=document.createElement("div");row.className="extra-ex-card";row.style.marginBottom="8px";
+    row.innerHTML=`<div style="font-weight:700;font-size:14px;">${t.name}${isActive?' <span class="tag tag-green">aktivní</span>':""}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        ${!isActive?`<button class="btn btn-outline-green" style="flex:1;padding:6px 8px;font-size:11px;" onclick="activateTemplate('${t.id}')">Aktivovat</button>`:""}
+        <button class="btn btn-outline" style="flex:1;padding:6px 8px;font-size:11px;" onclick="duplicateTemplate('${t.id}')">Duplikovat</button>
+        <button class="btn btn-outline" style="flex:1;padding:6px 8px;font-size:11px;" onclick="renameTemplate('${t.id}')">Přejmenovat</button>
+        ${tpls.length>1?`<button class="btn btn-red" style="flex:1;padding:6px 8px;font-size:11px;" onclick="deleteTemplate('${t.id}')">Smazat</button>`:""}
+      </div>`;
+    cont.appendChild(row);
+  });
+}
+function activateTemplate(id){
+  setActiveTemplate(id);
+  renderTemplateList();updateHeader();renderWorkout();
+  planEditDay=null;renderPlanEditor();
+  showToast("Šablona aktivována ✓");
+}
+function addTemplate(){
+  const name=prompt("Název nové šablony:","Nová šablona");
+  if(!name)return;
+  const tpls=getTemplates();
+  const emptyDays={};
+  DAY_ORDER.forEach(k=>{emptyDays[k]={label:(PLAN[k]&&PLAN[k].label)||k,type:"📝 Vlastní",intensity:"medium",cardioOnly:true,cardioNote:"Prázdný den — uprav v Plánu cvičení."};});
+  tpls.push({id:"tpl_"+Date.now(),name,days:emptyDays});
+  saveTemplates(tpls);renderTemplateList();showToast("Šablona vytvořena ✓");
+}
+function duplicateTemplate(id){
+  const tpls=getTemplates();
+  const src=tpls.find(t=>t.id===id);if(!src)return;
+  const name=prompt("Název kopie:",src.name+" (kopie)");
+  if(!name)return;
+  tpls.push({id:"tpl_"+Date.now(),name,days:JSON.parse(JSON.stringify(src.days))});
+  saveTemplates(tpls);renderTemplateList();showToast("Šablona zkopírována ✓");
+}
+function renameTemplate(id){
+  const tpls=getTemplates();
+  const t=tpls.find(x=>x.id===id);if(!t)return;
+  const name=prompt("Nový název:",t.name);
+  if(!name)return;
+  t.name=name;saveTemplates(tpls);renderTemplateList();updateHeader();
+}
+function deleteTemplate(id){
+  let tpls=getTemplates();
+  if(tpls.length<=1){showToast("Musí zůstat aspoň jedna šablona");return;}
+  if(!confirm("Smazat tuto šablonu?"))return;
+  const wasActive=id===getActiveTemplateId();
+  tpls=tpls.filter(t=>t.id!==id);
+  saveTemplates(tpls);
+  if(wasActive)setActiveTemplate(tpls[0].id);
+  renderTemplateList();updateHeader();renderWorkout();
+}
+
+// ═══ REHAB ═══
+function getRehabStartDate(){
+  let d=load("rehab-start-date",null);
+  if(!d){d=todayKey();save("rehab-start-date",d);}
+  return d;
+}
+function computeRehabWeekForDate(d){
+  const start=new Date(getRehabStartDate()+"T00:00:00");
+  const dt=new Date(d+"T00:00:00");
+  const days=Math.floor((dt-start)/86400000);
+  return Math.max(1,Math.floor(days/7)+1);
+}
+function getRehabWeek(){
+  const override=load("rehab-week-override",null);
+  return override||computeRehabWeekForDate(todayKey());
+}
+function adjustRehabWeek(delta){
+  const next=Math.max(1,getRehabWeek()+delta);
+  save("rehab-week-override",next);
+  renderRehab();
+}
+function setKneePain(v){
+  save("knee-pain-"+todayKey(),v);
+  renderRehab();
+}
+function renderRehab(){
+  const week=getRehabWeek();
+  document.getElementById("rehab-week-lbl").textContent="Týden "+week;
+  document.getElementById("rehab-recommend-lbl").textContent=week<3
+    ?"Doporučeno: Blok 1 (Aktivace) + Blok 3 (Protažení)"
+    :"Doporučeno: Blok 1 + Blok 2 (Posilování) + Blok 3";
+  const pain=load("knee-pain-"+todayKey(),null);
+  document.querySelectorAll("#knee-pain-row .mood-btn").forEach((b,i)=>b.classList.toggle("active",pain===i));
+  const today=todayKey();
+  const checked=load("rehab-"+today,{});
+  const cont=document.getElementById("rehab-blocks-cont");cont.innerHTML="";
+  REHAB_BLOCKS.forEach(block=>{
+    const active=block.alwaysOn||week>=block.minWeek;
+    const card=document.createElement("div");card.className="card";
+    if(!active){
+      card.innerHTML=`<div class="label">${block.label}</div><p style="color:var(--muted);font-size:13px;margin-top:8px;">Začíná od týdne ${block.minWeek} — zatím přeskoč.</p>`;
+      cont.appendChild(card);return;
+    }
+    const exs=block.exercises;
+    const done=exs.filter(e=>checked[e.id]).length;
+    let html=`<div style="display:flex;justify-content:space-between;align-items:center;"><div class="label">${block.label}</div><div style="font-size:12px;color:var(--muted);">${done}/${exs.length}</div></div><div style="margin-top:10px;">`;
+    exs.forEach(ex=>{
+      const isDone=!!checked[ex.id];
+      html+=`<div class="ex-card${isDone?" done":""}"><div class="ex-row"><button class="checkbox${isDone?" checked":""}" onclick="toggleRehabEx('${ex.id}')">${isDone?"✓":""}</button><div style="flex:1;"><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;"><span class="ex-name${isDone?" done":""}">${ex.name}</span><a href="${ex.url}" target="_blank" class="ex-link">▶</a></div><div class="ex-sets">${ex.sets}</div></div></div></div>`;
+    });
+    html+="</div>";
+    card.innerHTML=html;
+    cont.appendChild(card);
+  });
+}
+function toggleRehabEx(id){
+  const today=todayKey();const checked=load("rehab-"+today,{});
+  checked[id]=!checked[id];save("rehab-"+today,checked);
+  renderRehab();
+}
+
 // ═══ UTILS ═══
 function todayKey(){return new Date().toISOString().slice(0,10);}
 function load(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
@@ -577,9 +916,15 @@ const todayDayKey=getDayKey(todayKey());
 if(PLAN[todayDayKey])activeDay=todayDayKey;else activeDay="Po";
 
 // ═══ SETTINGS ═══
-function getSettings(){return load("settings",{stepsGoal:9000,floorsGoal:15,weightGoal:80,waistGoal:98,phase:1,notifMorning:"08:00",notifEvening:"21:00"});}
+function getSettings(){return load("settings",{stepsGoal:9000,floorsGoal:15,weightGoal:80,waistGoal:98,notifMorning:"08:00",notifEvening:"21:00"});}
 function saveSettings(){
-  const s={stepsGoal:parseInt(document.getElementById("set-steps-goal").value)||9000,floorsGoal:parseInt(document.getElementById("set-floors-goal").value)||15,weightGoal:parseFloat(document.getElementById("set-weight-goal").value)||80,waistGoal:parseFloat(document.getElementById("set-waist-goal").value)||98,phase:parseInt(document.getElementById("set-phase").value)||1,notifMorning:document.getElementById("set-notif-morning").value||"08:00",notifEvening:document.getElementById("set-notif-evening").value||"21:00"};
+  const s=getSettings();
+  s.stepsGoal=parseInt(document.getElementById("set-steps-goal").value)||9000;
+  s.floorsGoal=parseInt(document.getElementById("set-floors-goal").value)||15;
+  s.weightGoal=parseFloat(document.getElementById("set-weight-goal").value)||80;
+  s.waistGoal=parseFloat(document.getElementById("set-waist-goal").value)||98;
+  s.notifMorning=document.getElementById("set-notif-morning").value||"08:00";
+  s.notifEvening=document.getElementById("set-notif-evening").value||"21:00";
   save("settings",s);updateHeader();renderWorkout();showToast("Nastavení uloženo ✓");
 }
 function loadSettingsUI(){
@@ -588,9 +933,9 @@ function loadSettingsUI(){
   document.getElementById("set-floors-goal").value=s.floorsGoal;
   document.getElementById("set-weight-goal").value=s.weightGoal;
   document.getElementById("set-waist-goal").value=s.waistGoal;
-  document.getElementById("set-phase").value=s.phase;
   document.getElementById("set-notif-morning").value=s.notifMorning||"08:00";
   document.getElementById("set-notif-evening").value=s.notifEvening||"21:00";
+  renderTemplateList();
 }
 
 // ═══ NOTIFICATIONS (best-effort, app must stay open) ═══
@@ -632,8 +977,7 @@ function lastWithField(metrics,field){
   return null;
 }
 function updateHeader(){
-  const s=getSettings();
-  document.getElementById("hdr-phase").textContent=s.phase;
+  document.getElementById("hdr-template").textContent=getActiveTemplate().name;
   const metrics=load("body-metrics",[]);
   document.getElementById("hdr-weight").textContent=lastWithField(metrics,"weight")||"—";
   document.getElementById("hdr-waist").textContent=lastWithField(metrics,"waist")||"—";
@@ -649,6 +993,7 @@ function switchTab(tab){
   if(tab==="body")renderBodyTab();
   if(tab==="food")renderFoodTab();
   if(tab==="supps")renderSupps();
+  if(tab==="rehab")renderRehab();
   if(tab==="settings"){loadSettingsUI();renderPlanEditor();}
 }
 
@@ -673,7 +1018,7 @@ function renderPlanEditExercises(){
   const day=PLAN[planEditDay];
   if(!day)return;
   if(!day.exercises){
-    cont.innerHTML=`<div class="form-group" style="margin-top:10px;"><label>Tento den je aktivní/volný (bez seznamu cviků) — popis dne</label><textarea id="plan-cardio-note" rows="2">${day.cardioNote||""}</textarea></div>`;
+    cont.innerHTML=`<div class="form-group" style="margin-top:10px;"><label>Tento den je aktivní/volný (bez seznamu cviků) — popis dne</label><textarea id="plan-cardio-note" rows="2">${day.cardioNote||""}</textarea></div><button class="btn btn-outline" style="width:100%;margin-top:6px;" onclick="convertDayToWorkout()">🏋️ Převést na silový den s cviky</button>`;
     return;
   }
   day.exercises.forEach((ex,i)=>{
@@ -700,9 +1045,16 @@ function removePlanEx(i){
   renderPlanEditExercises();
 }
 
+function convertDayToWorkout(){
+  const day=PLAN[planEditDay];
+  day.exercises=[];
+  day.cardioOnly=false;
+  renderPlanEditExercises();
+}
+
 function addPlanExercise(){
   const day=PLAN[planEditDay];
-  if(!day.exercises){showToast("Tento den nemá seznam cviků (je aktivní/volný) — uprav popis dne místo toho");return;}
+  if(!day.exercises){showToast("Nejdřív převeď den na silový (tlačítko nahoře)");return;}
   day.exercises.push({id:"custom_"+Date.now(),name:"Nový cvik",en:"",sets:"3×12",note:"",url:""});
   renderPlanEditExercises();
 }
@@ -713,14 +1065,18 @@ function savePlanEdits(){
     const noteEl=document.getElementById("plan-cardio-note");
     if(noteEl)day.cardioNote=noteEl.value;
   }
-  save("plan-data",PLAN);
+  const tpls=getTemplates();
+  const activeId=getActiveTemplateId();
+  const tpl=tpls.find(t=>t.id===activeId);
+  if(tpl){tpl.days[planEditDay]=day;saveTemplates(tpls);}
   renderWorkout();
   showToast("Plán uložen ✓");
 }
 
-function resetPlanToDefault(){
-  if(!confirm("Obnovit výchozí plán cvičení? Vlastní úpravy se ztratí."))return;
-  localStorage.removeItem("plan-data");
+function resetTemplatesToDefault(){
+  if(!confirm("Obnovit všechny výchozí šablony? Vlastní šablony a úpravy se ztratí."))return;
+  localStorage.removeItem("templates");
+  const s=getSettings();delete s.templateId;save("settings",s);
   location.reload();
 }
 
@@ -980,12 +1336,14 @@ function saveBodyMetrics(){
   const w=parseFloat(document.getElementById("inp-weight").value);
   const ws=parseFloat(document.getElementById("inp-waist").value);
   const sl=parseFloat(document.getElementById("inp-sleep").value);
+  const sf=parseFloat(document.getElementById("inp-skinfold").value);
+  const sfSite=document.getElementById("inp-skinfold-site").value;
   const noteVal=document.getElementById("inp-note").value;
-  if(!w&&!ws&&!sl&&!currentMoodVal&&!noteVal){showToast("Zadej aspoň jednu hodnotu");return;}
+  if(!w&&!ws&&!sl&&!sf&&!currentMoodVal&&!noteVal){showToast("Zadej aspoň jednu hodnotu");return;}
   const metrics=load("body-metrics",[]);
   const today=todayKey();
   const existing=metrics.findIndex(m=>m.date===today);
-  const entry={date:today,weight:w||null,waist:ws||null,sleep:sl||null,mood:currentMoodVal||null,note:noteVal||null};
+  const entry={date:today,weight:w||null,waist:ws||null,sleep:sl||null,mood:currentMoodVal||null,note:noteVal||null,skinfold:sf||null,skinfoldSite:sfSite||null};
   if(existing>=0)metrics[existing]=entry;else metrics.push(entry);
   save("body-metrics",metrics);
   updateHeader();renderBodyTab();showToast("Míry uloženy ✓");
@@ -1001,7 +1359,7 @@ function renderBodyTab(){
   document.getElementById("goal-weight").textContent="Cíl: "+s.weightGoal+" kg";
   document.getElementById("goal-waist").textContent="Cíl: "+s.waistGoal+" cm";
 
-  const startWeight=85,startWaist=104;
+  const startWeight=83,startWaist=104;
   const curW=lastWeight||startWeight;
   const curWs=lastWaist||startWaist;
   const wPct=Math.max(0,Math.min(100,((startWeight-curW)/(startWeight-s.weightGoal))*100));
@@ -1017,6 +1375,8 @@ function renderBodyTab(){
   document.getElementById("inp-waist").value=todayMetric.waist||"";
   document.getElementById("inp-sleep").value=todayMetric.sleep||"";
   document.getElementById("inp-note").value=todayMetric.note||"";
+  document.getElementById("inp-skinfold").value=todayMetric.skinfold||"";
+  document.getElementById("inp-skinfold-site").value=todayMetric.skinfoldSite||"";
   currentMoodVal=todayMetric.mood||0;
   document.querySelectorAll(".mood-btn").forEach((b,i)=>b.classList.toggle("active",i+1===todayMetric.mood));
 
@@ -1101,10 +1461,67 @@ function buildFoodDateNav(){
   });
 }
 
+function renderMealPlan(){
+  const dk=getDayKey(selectedDate);
+  const plan=MEAL_PLAN[dk];
+  const cont=document.getElementById("meal-plan-cont");
+  if(!plan){cont.innerHTML="";return;}
+  let html=`<div style="font-size:14px;font-weight:700;">${plan.label}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px;">${plan.kcalTarget} · ${plan.carbsTarget}</div>`;
+  if(plan.proteinOfDay){
+    html+=`<div style="margin-top:8px;font-size:12px;"><span class="tag tag-orange">Bílkovina dne</span> <strong>${plan.proteinOfDay}</strong>${plan.proteinNote?" — "+plan.proteinNote:""}</div>`;
+  }
+  html+=`<div style="margin-top:10px;">`;
+  plan.meals.forEach(m=>{
+    const slotLabel=(MEAL_SLOTS.find(s=>s.id===m.slot)||{}).label||m.slot;
+    html+=`<div class="extra-ex-card" style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);">${slotLabel}</div>
+          <div style="font-weight:700;font-size:13px;margin-top:2px;">${m.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${m.note}</div>
+          ${m.kcal?`<div style="color:var(--orange);font-size:12px;font-weight:600;margin-top:2px;">~${m.kcal} kcal</div>`:""}
+        </div>
+        <button class="btn btn-outline-green" style="padding:6px 10px;font-size:11px;flex-shrink:0;" onclick="addSuggestedMeal('${m.slot}','${m.name.replace(/'/g,"\\'")}',${m.kcal||"null"})">+ Přidat</button>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+  html+=`<div style="margin-top:6px;"><span class="meal-add" onclick="toggleMealTips()" id="meal-tips-toggle">💡 Zobrazit pravidla</span><div id="meal-tips-cont" style="display:none;margin-top:8px;"></div></div>`;
+  cont.innerHTML=html;
+}
+
+function toggleMealTips(){
+  const c=document.getElementById("meal-tips-cont");
+  const show=c.style.display==="none";
+  c.style.display=show?"block":"none";
+  document.getElementById("meal-tips-toggle").textContent=show?"💡 Skrýt pravidla":"💡 Zobrazit pravidla";
+  if(show)c.innerHTML="<ul style='margin-left:16px;font-size:12px;color:var(--muted);line-height:1.7;'>"+MEAL_PLAN_TIPS.map(t=>`<li>${t}</li>`).join("")+"</ul>";
+}
+
+function addSuggestedMeal(slotId,name,kcal){
+  const d=getMealData();
+  if(!d[slotId])d[slotId]={items:[]};
+  d[slotId].items.push({name,qty:"",unit:"porce",kcal:kcal||""});
+  saveMealData(d);
+  renderFoodTab();
+  showToast("Přidáno do jídelníčku ✓");
+}
+
+function renderShoppingList(){
+  const cont=document.getElementById("shopping-list-cont");
+  cont.innerHTML=SHOPPING_LIST.map(cat=>`
+    <div class="section-title">${cat.cat}</div>
+    ${cat.items.map(i=>`<div class="meal-item" style="align-items:center;"><div style="flex:1;font-size:13px;">${i.name}</div><div style="font-size:12px;color:var(--orange);width:70px;text-align:right;">${i.qty}</div></div>${i.note?`<div style="font-size:11px;color:var(--muted);margin-top:-4px;margin-bottom:6px;">${i.note}</div>`:""}`).join("")}
+  `).join("");
+}
+
 function renderFoodTab(){
   buildFoodDateNav();
   const d=new Date(selectedDate+"T12:00:00");
   document.getElementById("food-date-lbl").textContent=d.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"});
+  renderMealPlan();
+  renderShoppingList();
   const meals=load("meals-"+selectedDate,{});
   const cont=document.getElementById("meal-slots-cont");cont.innerHTML="";
   MEAL_SLOTS.forEach(slot=>{
@@ -1221,13 +1638,17 @@ function sendToClaudeWeek(){
     const hasMeals=Object.values(meals).some(v=>v&&v.items&&v.items.length);
     const dayMacros=load("macros-"+d,{});
     const hasMacros=dayMacros.protein||dayMacros.carbs||dayMacros.fat;
-    if(!hasMeals&&!cardio.steps&&!cardio.floors&&!metrics&&!hasMacros)return;
+    const rehabChecked=load("rehab-"+d,{});
+    const hasRehab=Object.values(rehabChecked).some(Boolean);
+    const kneePain=load("knee-pain-"+d,null);
+    if(!hasMeals&&!cardio.steps&&!cardio.floors&&!metrics&&!hasMacros&&!hasRehab&&kneePain==null)return;
     const dk=getDayKey(d);const plan=PLAN[dk];
     const dd=new Date(d+"T12:00:00");
     lines.push(`📅 ${dd.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"})}`);
     if(metrics){
       if(metrics.weight)lines.push(`  ⚖️ Váha: ${metrics.weight} kg`);
       if(metrics.waist)lines.push(`  📏 Pas: ${metrics.waist} cm`);
+      if(metrics.skinfold)lines.push(`  🤏 Kožní řasa: ${metrics.skinfold} mm${metrics.skinfoldSite?" ("+metrics.skinfoldSite+")":""}`);
       if(metrics.sleep)lines.push(`  😴 Spánek: ${metrics.sleep} h`);
       if(metrics.mood)lines.push(`  ⚡ Energie: ${"⭐".repeat(metrics.mood)}`);
       if(metrics.note)lines.push(`  📝 Poznámka: ${metrics.note}`);
@@ -1236,6 +1657,12 @@ function sendToClaudeWeek(){
     if(plan&&plan.exercises){const done=plan.exercises.filter(e=>workout[e.id]).length;lines.push(`  💪 Cviky: ${done}/${plan.exercises.length} splněno`);}
     if(extras.length)lines.push(`  ➕ Navíc: ${extras.map(e=>`${e.name} ${e.sets}×${e.reps}`).join(", ")}`);
     if(sports.length)lines.push(`  🏅 Sporty: ${sports.map(s=>`${s.name}${s.time?" "+s.time+"min":""}`).join(", ")}`);
+    const rehabWeek=computeRehabWeekForDate(d);
+    const activeBlocks=REHAB_BLOCKS.filter(b=>b.alwaysOn||rehabWeek>=b.minWeek);
+    const totalRehabEx=activeBlocks.reduce((a,b)=>a+b.exercises.length,0);
+    const doneRehabEx=activeBlocks.reduce((a,b)=>a+b.exercises.filter(e=>rehabChecked[e.id]).length,0);
+    if(totalRehabEx>0&&hasRehab)lines.push(`  🦵 Rehab (týden ${rehabWeek}): ${doneRehabEx}/${totalRehabEx} cviků`);
+    if(kneePain!=null)lines.push(`  🦵 Bolest kolena: ${kneePain}/5`);
     let dayKcal=0;
     MEAL_SLOTS.forEach(slot=>{
       const slotData=meals[slot.id];
@@ -1250,6 +1677,8 @@ function sendToClaudeWeek(){
     if(macros.protein||macros.carbs||macros.fat)lines.push(`  🥩 Makra: B ${macros.protein||0}g · S ${macros.carbs||0}g · T ${macros.fat||0}g`);
     lines.push("");
   });
+  const weekScoreEl=document.getElementById("week-score-val");
+  if(weekScoreEl&&weekScoreEl.textContent!=="—")lines.push(`📈 Týdenní skóre: ${weekScoreEl.textContent}`);
   const text=lines.join("\n");
   navigator.clipboard.writeText(text).then(()=>{
     showToast("Zkopírováno!");
@@ -1288,6 +1717,7 @@ function confirmClearData(){
 }
 
 // ═══ INIT ═══
+applyActiveTemplate();
 updateHeader();
 renderWorkout();
 renderSupps();
